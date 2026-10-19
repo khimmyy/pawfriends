@@ -12,6 +12,7 @@ export default function FeedScreen() {
         <View style={styles.headerActions}>
           <Pressable style={styles.circleButton}><Ionicons name="search" size={18} color={COLORS.dark} /></Pressable>
           <Pressable style={styles.circleButton}><Ionicons name="add-circle-outline" size={20} color={COLORS.dark} /></Pressable>
+          <Pressable style={styles.circleButton}><Ionicons name="menu-outline" size={18} color={COLORS.dark}/></Pressable>
         </View>
       </View>
 

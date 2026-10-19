@@ -1,18 +1,22 @@
 import { router } from "expo-router";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { useSQLiteContext } from "expo-sqlite";
 import { useState } from "react";
 import {
   Alert,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
-import { auth, db } from "../firebaseConfig";
+import { registerOwner as saveOwner } from "../database/database";
 
 export default function LoginScreen() {
+  const db = useSQLiteContext();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -24,63 +28,72 @@ export default function LoginScreen() {
         return;
       }
 
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
+      await saveOwner(db, {
+        fullName,
         email,
-        password
-      );
-
-      await setDoc(doc(db, "owners", userCredential.user.uid), {
-        fullName: fullName,
-        email: email,
-        createdAt: new Date(),
+        password,
       });
 
       Alert.alert("Success", "Owner registered successfully!");
 
       router.replace("/(tabs)/home");
-    } catch (error: any) {
-      Alert.alert("Registration failed", error.message);
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error && error.message.includes("UNIQUE constraint failed")
+          ? "An owner with this email already exists."
+          : "Unable to register the owner right now.";
+
+      Alert.alert("Registration failed", message);
     }
   };
 
+  const KeyboardAviodingComponent = () => {
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>🐾</Text>
-      <Text style={styles.title}>Welcome to PawFriends</Text>
-      <Text style={styles.subtitle}>Create your owner account</Text>
+    <KeyboardAvoidingView
+     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+     style={styles.container}>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Full Name"
-        value={fullName}
-        onChangeText={setFullName}
-      />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+         <View style={styles.container}>
+            <Text style={styles.logo}>🐾</Text>
+              <Text style={styles.title}>Welcome to PawFriends</Text>
+              <Text style={styles.subtitle}>Create your owner account</Text>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email Address"
-        keyboardType="email-address"
-        autoCapitalize="none"
-        value={email}
-        onChangeText={setEmail}
-      />
+              <TextInput
+                style={styles.input}
+                placeholder="Full Name"
+                value={fullName}
+                onChangeText={setFullName}
+              />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
+              <TextInput
+                style={styles.input}
+                placeholder="Email Address"
+                keyboardType="email-address"
+                autoCapitalize="none"
+                value={email}
+                onChangeText={setEmail}
+              />
 
-      <TouchableOpacity style={styles.button} onPress={registerOwner}>
-        <Text style={styles.buttonText}>Register Owner</Text>
-      </TouchableOpacity>
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                secureTextEntry
+                value={password}
+                onChangeText={setPassword}
+              />
 
-      <Text style={styles.loginText}>Already have an account? Log in</Text>
-    </View>
+              <TouchableOpacity style={styles.button} onPress={registerOwner}>
+                <Text style={styles.buttonText}>Register Owner</Text>
+              </TouchableOpacity>
+
+            <Text style={styles.loginText}>Already have an account? Log in</Text>
+          </View>
+      </TouchableWithoutFeedback>
+    </KeyboardAvoidingView>
+   
   );
+};
 }
 
 const styles = StyleSheet.create({
