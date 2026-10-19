@@ -1,215 +1,142 @@
 # PawFriends
 
-PawFriends is an Expo and React Native mobile application for pet owners and animal lovers. It includes a social feed, adoption listings, veterinary information, notifications, and profiles.
+PawFriends is a cross-platform pet community prototype built with Expo and React Native. It brings together a social feed, pet adoption listings, veterinary reminders, activity notifications, and pet profiles in one app.
 
-The project currently uses Firebase Authentication for owner registration and Cloud Firestore for owner profile data. SQLite is recommended for local/offline data such as cached pets, favorites, drafts, and pending synchronization work.
+The current project is migrating from Firebase to a device-local SQLite data layer. Owner records are stored in `pawfriends.db`; the rest of the app currently uses static development data and UI-only interactions.
 
 ## Current status
 
-Implemented:
+Implemented or in progress:
 
-- Expo Router navigation with home, adoption, veterinary, notification, and profile tabs
-- Email/password owner registration with Firebase Authentication
-- Owner profile creation in the Firestore `owners` collection
-- Static sample pet and feed data
+- Expo Router navigation with PawFeed, Adopt, Vet, Activity, and Profile tabs
+- A local SQLite provider initialized at the app root
+- Versioned database setup with WAL mode, foreign keys, and an `owners` table
+- Owner registration data handling with normalized, unique email addresses and bound SQL parameters
+- Per-record random password salts and SHA-512 hashes generated with `expo-crypto`
+- Keyboard-aware registration form UI and duplicate-email error handling
+- Static pet stories, feed posts, adoption content, veterinary services, notifications, and profile data
+- Expo SQLite web support through WebAssembly and COOP/COEP headers
+- Typed Expo Router routes and the React Compiler
 
-Not yet implemented:
+Still to build:
 
-- Existing-user sign-in and sign-out
+- Existing-owner sign-in, sign-out, and persistent sessions
 - Authentication-aware route protection
-- Password reset and email verification
-- Persistent Firebase authentication on native devices
-- SQLite schema and synchronization
-- Production Firestore Security Rules stored in this repository
+- Password reset, email verification, and account recovery
+- A production authentication backend and cross-device synchronization
+- Persistent posts, adoption listings, notifications, and profile editing
+- Working search, posting, adoption, veterinary booking, and other currently visual-only actions
+- Automated tests and production-ready validation
 
 ## Technology stack
 
-- Expo SDK 54
-- React Native 0.81
-- React 19
-- TypeScript
-- Expo Router
-- Firebase Authentication
-- Cloud Firestore
-- Optional local storage with `expo-sqlite`
+- Expo SDK 57
+- React Native 0.86.3
+- React 19.2.3
+- TypeScript 6
+- Expo Router 57
+- Expo SQLite 57
+- Expo Crypto 57
+- React Navigation 7
 
 ## Prerequisites
 
-Install the following before starting:
-
-- [Node.js](https://nodejs.org/)
+- [Node.js](https://nodejs.org/) 22.13.x or newer
 - [Git](https://git-scm.com/)
-- [Visual Studio Code](https://code.visualstudio.com/)
-- [Expo Go](https://expo.dev/go) or an Android/iOS emulator
+- [Expo Go](https://expo.dev/go), an Android emulator, an iOS simulator, or a web browser
 
 ## Installation
 
-Clone the repository:
+Clone the repository and install its dependencies:
 
 ```bash
 git clone https://github.com/khimmyy/pawfriends.git
 cd pawfriends
-```
-
-Install dependencies:
-
-```bash
 npm install
 ```
 
 Start the Expo development server:
 
 ```bash
-npx expo start
+npm start
 ```
 
-From the Expo terminal, follow the displayed instructions to open the project in Expo Go, an Android emulator, an iOS simulator, or a browser.
+Follow the terminal instructions to open the project on a supported target. You can also start one directly:
+
+```bash
+npm run android
+npm run ios
+npm run web
+```
+
+> Expo SQLite's web support is currently alpha. This repository includes the required Metro WebAssembly configuration and development/EAS Hosting COOP/COEP headers. Other web hosts must send equivalent headers.
 
 ## Available commands
 
-```bash
-npm start          # Start the Expo development server
-npm run android    # Start on Android
-npm run ios        # Start on iOS
-npm run web        # Start in a browser
-npm run lint       # Run Expo ESLint checks
-```
+| Command | Purpose |
+| --- | --- |
+| `npm start` | Start the Expo development server |
+| `npm run android` | Start the Android target |
+| `npm run ios` | Start the iOS target |
+| `npm run web` | Start the web target |
+| `npm run lint` | Run the Expo ESLint checks |
+| `npx tsc --noEmit` | Run the TypeScript type check |
 
 ## Project structure
 
 ```text
 app/
-  _layout.tsx          Root navigation layout
-  index.tsx            Initial redirect
-  login.tsx            Owner registration screen
+  _layout.tsx          Root stack, SQLite provider, and safe-area provider
+  index.tsx            Initial redirect to owner registration
+  login.tsx            Owner registration form
   (tabs)/
-    home.tsx           Social feed
-    adoption.tsx       Adoption listings
-    veterinary.tsx     Veterinary information
-    notifications.tsx  Activity notifications
-    profile.tsx        User profile
+    _layout.tsx        Bottom-tab navigation
+    home.tsx           PawFeed stories and posts
+    adoption.tsx       Adoption discovery prototype
+    veterinary.tsx     Veterinary services prototype
+    notifications.tsx  Activity feed prototype
+    profile.tsx        Pet profile prototype
 components/            Reusable UI components
 constants/             Theme constants
 data/                  Static development data
+database/
+  database.ts          SQLite schema migration and owner queries
 hooks/                 Shared React hooks
-firebaseConfig.ts      Firebase app, Auth, and Firestore initialization
+metro.config.js        Metro configuration, including SQLite web support
 ```
 
-## Firebase authentication
+## Local owner storage
 
-Firebase is initialized in `firebaseConfig.ts`. The registration flow is in `app/login.tsx`.
-
-When an owner registers:
-
-1. The app validates that the name, email, and password fields are present.
-2. `createUserWithEmailAndPassword` creates the Firebase Authentication account.
-3. Firebase automatically signs in the new account.
-4. The Firebase user UID becomes the document ID at `owners/{uid}`.
-5. The app stores the owner's name, email, and creation time in Firestore.
-6. The app navigates to the home tab.
-
-Before running registration, enable **Email/Password** under Firebase Console → Authentication → Sign-in method and create a Cloud Firestore database.
-
-The Firebase client configuration identifies the Firebase project; it is not an administrator credential. Never commit service-account keys or other private backend credentials.
-
-### Recommended Firestore rules
-
-The repository does not currently contain a Firestore rules file. At minimum, owner documents should be restricted to their matching authenticated user:
+`app/_layout.tsx` opens `pawfriends.db` through `SQLiteProvider` and calls the migration in `database/database.ts`. Database version 1 creates the following local table:
 
 ```text
-rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /owners/{ownerId} {
-      allow create, read, update, delete:
-        if request.auth != null && request.auth.uid == ownerId;
-    }
-  }
-}
+owners
+  id             INTEGER PRIMARY KEY
+  full_name      TEXT NOT NULL
+  email          TEXT NOT NULL, case-insensitive, unique
+  password_salt  TEXT NOT NULL
+  password_hash  TEXT NOT NULL
+  created_at     TEXT NOT NULL
 ```
 
-Review and test all rules before deploying them to production.
+Registration trims the owner's name, normalizes the email address to lowercase, generates a random 16-byte salt, hashes the supplied password with SHA-512, and inserts the record using bound parameters. The database persists locally across app restarts.
 
-## Local SQLite storage
+### Security scope
 
-SQLite is useful when PawFriends needs data that remains available offline on one device. Good candidates include:
+This registration flow is for local prototyping only. Although plaintext passwords are not stored, a single salted SHA-512 digest is not an appropriate production password-storage design, and the default SQLite database is not encrypted. Production accounts should use a trusted authentication service or a server-side, slow password-hashing design with secure session management. Do not store service credentials, access tokens, or other secrets in this database.
 
-- Cached pet and feed records
-- Favorite pets
-- Unsubmitted posts or adoption drafts
-- A queue of changes waiting to be synchronized with Firestore
+## Development notes
 
-SQLite should not contain user passwords, Firebase refresh tokens, service-account credentials, or other application secrets. It is local device storage and does not synchronize automatically between devices.
-
-### Install SQLite
-
-This repository does not currently include SQLite. Add the Expo SDK 54-compatible version with:
-
-```bash
-npx expo install expo-sqlite
-```
-
-A recommended integration is to:
-
-1. Add a `SQLiteProvider` around the router in `app/_layout.tsx`.
-2. Create versioned migrations in a `database/` directory.
-3. Use `runAsync` with bound parameters for inserts, updates, and deletes.
-4. Use `getFirstAsync`, `getAllAsync`, or `getEachAsync` for reads.
-5. Treat Firestore as the shared source of truth and SQLite as an offline cache when data must be shared across users.
-
-Always bind values instead of inserting user input directly into SQL:
-
-```ts
-await db.runAsync(
-  "INSERT INTO favorites (user_uid, pet_id) VALUES (?, ?)",
-  [userUid, petId]
-);
-```
-
-### View SQLite data on Expo SDK 54
-
-You can inspect records from a temporary development screen or the React Native console:
-
-```ts
-const tables = await db.getAllAsync(
-  "SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY name"
-);
-
-const pets = await db.getAllAsync("SELECT * FROM pets");
-
-console.log("Tables:", tables);
-console.log("Pets:", pets);
-```
-
-Expo's built-in graphical SQLite inspector was introduced after SDK 54. If the project is upgraded to a compatible newer Expo SDK, start the app, press `Shift+M` in the Expo terminal, and select **Open expo-sqlite**.
-
-## Firebase and SQLite responsibilities
-
-| Data | Recommended storage |
-| --- | --- |
-| Account email/password authentication | Firebase Authentication |
-| Shared owner profile | Cloud Firestore |
-| Shared posts and adoption listings | Cloud Firestore |
-| Cached pets and posts | SQLite |
-| Favorites needed across devices | Firestore, optionally cached in SQLite |
-| Device-only favorites | SQLite |
-| Offline drafts and synchronization queue | SQLite |
-| Secrets and service-account credentials | Never store in the client app |
-
-## Security notes
-
-- Protect all Firestore collections with Security Rules.
-- Do not treat navigation as authorization; validate access at the database layer.
-- Do not store passwords or manually copied Firebase tokens in SQLite.
-- Use parameterized SQLite queries to prevent SQL injection.
-- Ordinary SQLite files are not encrypted. Sensitive local data requires an appropriate encrypted-storage design.
-- Do not display raw backend error details to users in production.
+- Install Expo-managed packages with `npx expo install <package>` so their versions stay compatible with SDK 57.
+- Keep routes and layouts under `app/`; typed routes are enabled in `app.json`.
+- Keep schema migrations and shared queries in `database/`.
+- Bind every user-controlled value passed to SQLite.
+- Treat the bundled pet, post, adoption, notification, and profile content as mock data.
 
 ## Documentation
 
-- [Expo SDK 54 documentation](https://docs.expo.dev/versions/v54.0.0/)
-- [Expo Router](https://docs.expo.dev/router/introduction/)
-- [Expo SQLite](https://docs.expo.dev/versions/v54.0.0/sdk/sqlite/)
-- [Firebase Authentication](https://firebase.google.com/docs/auth)
-- [Cloud Firestore](https://firebase.google.com/docs/firestore)
+- [Expo SDK 57 reference](https://docs.expo.dev/versions/v57.0.0/)
+- [Expo Router in SDK 57](https://docs.expo.dev/versions/v57.0.0/router/)
+- [Expo SQLite in SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/sqlite/)
+- [Expo Crypto in SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/crypto/)
+
