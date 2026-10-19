@@ -125,17 +125,9 @@ Registration trims the owner's name, normalizes the email address to lowercase, 
 
 This registration flow is for local prototyping only. Although plaintext passwords are not stored, a single salted SHA-512 digest is not an appropriate production password-storage design, and the default SQLite database is not encrypted. Production accounts should use a trusted authentication service or a server-side, slow password-hashing design with secure session management. Do not store service credentials, access tokens, or other secrets in this database.
 
-## Development notes
+## Join the community
 
-- Install Expo-managed packages with `npx expo install <package>` so their versions stay compatible with SDK 57.
-- Keep routes and layouts under `app/`; typed routes are enabled in `app.json`.
-- Keep schema migrations and shared queries in `database/`.
-- Bind every user-controlled value passed to SQLite.
-- Treat the bundled pet, post, adoption, notification, and profile content as mock data.
+Join our community of developers creating universal apps.
 
-## Documentation
-
-- [Expo SDK 57 reference](https://docs.expo.dev/versions/v57.0.0/)
-- [Expo Router in SDK 57](https://docs.expo.dev/versions/v57.0.0/router/)
-- [Expo SQLite in SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/sqlite/)
-- [Expo Crypto in SDK 57](https://docs.expo.dev/versions/v57.0.0/sdk/crypto/)
+- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
+- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
