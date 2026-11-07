@@ -40,6 +40,22 @@ export async function initializeDatabase(db: SQLiteDatabase) {
     `);
   }
 
+  if (currentVersion < 3) {
+    await db.execAsync(`
+        CREATE TABLE IF NOT EXISTS pets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT.
+        owner_id INTEGER NOT NULL REFERENCES
+        owners(id) ON DELETE CASCADE,
+        name TEXT NOT null,
+        species TEXT NOT null,
+        breed TEXT,
+        birthday TEXT,
+        photo_uri TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
+        CREATE INDEX IF NOT EXISTS idx_pets_owner ON PermissionStatus(owner_id);
+      `);
+  }
+
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
 }
 
@@ -153,4 +169,92 @@ export async function saveSession(db: SQLiteDatabase, ownerId: number) {
 
 export async function clearSession(db: SQLiteDatabase) {
   await db.runAsync('DELETE FROM session WHERE id = 1');
+}
+
+export const PET_SPECIES = ['Dog', 'Cat', 'Rabbit', 'Bird', 'Other'] as const;
+export type PetSpecies = (typeof PET_SPECIES) [number];
+
+export type Pet = {
+  id: number;
+  ownerId: number;
+  name: string;
+  species: PetSpecies;
+  breed: string | null;
+  birthday: string | null;
+  photoUri: string | null;
+};
+
+export type PetInput = Omit<Pet, 'id' | 'ownerId'>;
+
+type PetRow = {
+  id: number;
+  owner_id: number;
+  name: string;
+  species: PetSpecies;
+  breed: string | null;
+  birthday: string | null;
+  photo_uri: string | null;
+};
+
+function toPet(row: PetRow): Pet {
+  return {
+    id: row.id,
+    ownerId: row.owner_id,
+    name: row.name,
+    species: row.species,
+    breed: row.breed,
+    birthday: row.birthday,
+    photoUri: row.photo_uri,
+  };
+}
+
+export async function getPetsForOwner(
+  db:SQLiteDatabase, ownerId: number): Promise<Pet[]>
+  {
+    const rows = await db.getAllAsync<PetRow>(
+      `SELECT id, owner_id, name, species, breed, birthday, photo_uri 
+      FROM pets WHERE owner_id = ? ORDER BY created_at, id`,
+      ownerId
+    );
+    return rows.map(toPet);
+  }
+
+  export async function getPet(db:SQLiteDatabase, ownerId: number, petId: number):
+  Promise<Pet | null> {
+    const row = await db.getFirstAsync<PetRow>(
+      `SELECT id, owner_id, name, species, breed, birthday, photo_uri
+     FROM pets WHERE id = ? AND owner_id = ?`,
+    petId,
+    ownerId
+    );
+    return row ? toPet(row) : null;
+  }
+
+  export async function addPet(db: SQLiteDatabase, ownerId: number, input: PetInput): Promise<number>{
+    const result = await db.runAsync(
+    `INSERT INTO pets (owner_id, name, species, breed, birthday, photo_uri)
+     VALUES (?, ?, ?, ?, ?, ?)`,
+    ownerId,
+    input.name,
+    input.species,
+    input.breed,
+    input.birthday,
+    input.photoUri
+    );
+    return result.lastInsertRowId;
+  }
+
+  export async function updatePet(db: SQLiteDatabase, ownerId: number, petId: number, input: PetInput) {
+  await db.runAsync(
+    `UPDATE pets
+     SET name = ?, species = ?, breed = ?, birthday = ?, photo_uri = ?
+     WHERE id = ? AND owner_id = ?`,
+    input.name,
+    input.species,
+    input.breed,
+    input.birthday,
+    input.photoUri,
+    petId,
+    ownerId
+  );
 }

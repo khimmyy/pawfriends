@@ -33,8 +33,10 @@ function RootNavigator() {
       <Stack.Screen name="index" />
 
       <Stack.Protected guard={isSignedIn}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+          <Stack.Screen name="pets/new" />
+          <Stack.Screen name="pets/[id]" />
       </Stack.Protected>
 
       <Stack.Protected guard={!isSignedIn}>

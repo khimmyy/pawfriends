@@ -1,13 +1,19 @@
 import { useAuth } from '@/context/auth';
+import { getPetsForOwner, type Pet } from '@/database/database';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useCallback, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, POSTS, STORIES } from '../../data/pets';
+import { COLORS, POSTS } from '../../data/pets';
 
 export default function ProfileScreen() {
   const { owner, signOut } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
+  const db = useSQLiteContext();
+  const [pets, setPets] = useState<Pet[]>([]);
+
 
   const handleSignOut = async () => {
     setSigningOut(true);
@@ -19,21 +25,88 @@ export default function ProfileScreen() {
     }
   };
 
+   useFocusEffect(
+    useCallback(() => {
+      if (!owner) {
+        return;
+      }
+      let active = true;
+      getPetsForOwner(db, owner.id)
+        .then((result) => {
+          if (active) setPets(result);
+        })
+        .catch(() => {});
+      return () => {
+        active = false;
+      };
+    }, [db, owner])
+  );
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View style={styles.cover} />
         <View style={styles.profileCard}>
-          <Image source={{ uri: STORIES[0].avatar }} style={styles.avatar} />
-          <Text style={styles.name}>Mochi</Text>
-          <Text style={styles.username}>@sarahkim</Text>
-          <Text style={styles.bio}>Garden explorer, treat lover, and certified nap expert. 🐾</Text>
+            
+            {pets[0]?.photoUri ? (
+            <Image source={{ uri: pets[0].photoUri }} style={styles.avatar} />
+              ) : (
+                <View style={[styles.avatar, styles.avatarPlaceholder]}>
+                  <Ionicons name="paw" size={40} color={COLORS.blue} />
+                </View>
+              )}
+            <Text style={styles.name}>{owner?.fullName}</Text>
+            <Text style={styles.username}>{owner?.email}</Text>
+
           <View style={styles.stats}>
             <Stat label="Posts" value="24" />
             <Stat label="Friends" value="1.8K" />
             <Stat label="Likes" value="8.4K" />
           </View>
         </View>
+
+          <View style={styles.sectionHeader}>
+              <Text style={styles.sectionTitleInline}>My Pets</Text>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Add a pet"
+                onPress={() => router.push('/pets/new')}
+                style={styles.addPetButton}
+              >
+                <Ionicons name="add" size={18} color={COLORS.white} />
+                <Text style={styles.addPetText}>Add pet</Text>
+              </Pressable>
+            </View>
+
+            {pets.length === 0 ? (
+              <Text style={styles.emptyText}>No pets yet. Add your first one!</Text>
+            ) : (
+              pets.map((pet) => (
+                <Pressable
+                  key={pet.id}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Edit ${pet.name}`}
+                  onPress={() => router.push({ pathname: '/pets/[id]', params: { id: String(pet.id) } })}
+                  style={styles.petRow}
+                >
+                  {pet.photoUri ? (
+                    <Image source={{ uri: pet.photoUri }} style={styles.petPhoto} />
+                  ) : (
+                    <View style={[styles.petPhoto, styles.avatarPlaceholder]}>
+                      <Ionicons name="paw" size={20} color={COLORS.blue} />
+                    </View>
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.petName}>{pet.name}</Text>
+                    <Text style={styles.petMeta}>
+                      {[pet.species, pet.breed].filter(Boolean).join(' · ')}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={COLORS.muted} />
+                </Pressable>
+              ))
+            )}
+
 
         <Text style={styles.sectionTitle}>Recent Posts</Text>
         <View style={styles.grid}>
@@ -100,4 +173,14 @@ const styles = StyleSheet.create({
   signOutButton: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, minWidth: 110, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 14, backgroundColor: COLORS.bg },
   signOutPressed: { opacity: 0.7 },
   signOutText: { color: COLORS.blue, fontWeight: '700' },
+  avatarPlaceholder: { backgroundColor: COLORS.bg, alignItems: 'center', justifyContent: 'center' },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, marginBottom: 10 },
+  sectionTitleInline: { color: COLORS.dark, fontSize: 18, fontWeight: '800' },
+  addPetButton: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.blue, paddingHorizontal: 12, minHeight: 36, borderRadius: 18 },
+  addPetText: { color: COLORS.white, fontWeight: '700' },
+  emptyText: { color: COLORS.muted, marginHorizontal: 16, marginBottom: 16 },
+  petRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: COLORS.white, marginHorizontal: 16, marginBottom: 8, padding: 12, borderRadius: 14 },
+  petPhoto: { width: 48, height: 48, borderRadius: 24 },
+  petName: { color: COLORS.dark, fontWeight: '700', fontSize: 15 },
+  petMeta: { color: COLORS.muted, fontSize: 13, marginTop: 2 },
 });
