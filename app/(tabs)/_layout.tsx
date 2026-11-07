@@ -1,5 +1,5 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useColors } from '@/context/theme';
+import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 
 export default function TabLayout() {
@@ -11,11 +11,16 @@ export default function TabLayout() {
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: {
-          height: 64,
+          height: 70,
           paddingBottom: 8,
           paddingTop: 6,
           backgroundColor: colors.surface,
           borderTopColor: colors.border,
+          borderRadius: 25,
+          marginLeft:10,
+          marginRight: 10,
+          marginBottom: 10,
+          borderColor: colors.primary,
         },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}
