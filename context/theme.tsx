@@ -1,8 +1,9 @@
 import { PALETTES, type ColorScheme, type Palette } from '@/constants/colors';
 import { getSetting, setSetting } from '@/database/database';
 import { useSQLiteContext } from 'expo-sqlite';
+import { colorScheme as nativeWindColorScheme } from 'nativewind';
 import { createContext, useContext, useEffect, useState, type PropsWithChildren } from 'react';
-import { useColorScheme } from 'react-native';
+import { Platform, useColorScheme } from 'react-native';
 
 /** "system" follows the phone's light or dark setting. */
 export type AppearancePreference = 'system' | ColorScheme;
@@ -58,6 +59,13 @@ export function ThemeProvider({ children }: PropsWithChildren) {
   };
 
   const scheme: ColorScheme = preference === 'system' ? (systemScheme === 'dark' ? 'dark' : 'light') : preference;
+
+  // Keep NativeWind (Tailwind classes in React Native Reusables components) on the same scheme.
+  // On phones "system" is passed through so it keeps following the device; on the web NativeWind
+  // only toggles a "dark" class and treats "system" as light, so it gets the resolved scheme.
+  useEffect(() => {
+    nativeWindColorScheme.set(Platform.OS === 'web' ? scheme : preference);
+  }, [preference, scheme]);
 
   return (
     <ThemeContext.Provider value={{ colors: PALETTES[scheme], scheme, preference, setPreference, ready }}>

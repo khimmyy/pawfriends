@@ -1,17 +1,17 @@
+// Tailwind styles for NativeWind / React Native Reusables. Must be imported first, in the root layout.
+import '../global.css';
+
 import { AnimatedSplash } from '@/components/animated-splash';
 import { BRAND_FONT_FILES } from '@/constants/fonts';
 import { AuthProvider, useAuth } from '@/context/auth';
 import { ThemeProvider, useTheme } from '@/context/theme';
 import { initializeDatabase } from '@/database/database';
+import { NAV_THEME } from '@/lib/theme';
+import { PortalHost } from '@rn-primitives/portal';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 // Since SDK 56, the navigation theme API is imported from Expo Router, not from React Navigation itself.
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider as NavigationThemeProvider,
-  type Theme,
-} from 'expo-router/react-navigation';
+import { ThemeProvider as NavigationThemeProvider } from 'expo-router/react-navigation';
 import * as SplashScreen from 'expo-splash-screen';
 import { SQLiteProvider } from 'expo-sqlite';
 import { StatusBar } from 'expo-status-bar';
@@ -53,23 +53,9 @@ function RootNavigator() {
 
   const isSignedIn = owner !== null;
 
-  // React Navigation paints screen backgrounds and transitions; give it the same palette.
-  const baseTheme = scheme === 'dark' ? DarkTheme : DefaultTheme;
-  const navigationTheme: Theme = {
-    ...baseTheme,
-    colors: {
-      ...baseTheme.colors,
-      primary: colors.primary,
-      background: colors.page,
-      card: colors.surface,
-      text: colors.text,
-      border: colors.border,
-      notification: colors.heart,
-    },
-  };
-
+  // Screen backgrounds and transitions use the same palette (lib/theme.ts).
   return (
-    <NavigationThemeProvider value={navigationTheme}>
+    <NavigationThemeProvider value={NAV_THEME[scheme]}>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
       <View style={[styles.root, { backgroundColor: colors.page }]}>
         {/* Wait for the saved session so a signed-in owner never sees the sign-in screen flash.
@@ -99,6 +85,8 @@ function RootNavigator() {
         {/* Waits for the saved appearance too, so the first screen appears in the right theme. */}
         {splashDone ? null : <AnimatedSplash ready={!isLoading && themeReady} onFinish={finishSplash} />}
       </View>
+      {/* Where Reusables menus, popovers and tooltips render, above everything else. */}
+      <PortalHost />
     </NavigationThemeProvider>
   );
 }

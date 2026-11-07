@@ -1,16 +1,22 @@
 const { getDefaultConfig } = require('expo/metro-config');
+const { withNativeWind } = require('nativewind/metro');
 
 const config = getDefaultConfig(__dirname);
 
+// expo-sqlite on the web loads a WebAssembly file.
 if (!config.resolver.assetExts.includes('wasm')) {
   config.resolver.assetExts.push('wasm');
 }
 
-const enhanceMiddleware = config.server.enhanceMiddleware;
-config.server.enhanceMiddleware = (middleware, metroServer) => {
-  const enhancedMiddleware = enhanceMiddleware
-    ? enhanceMiddleware(middleware, metroServer)
-    : middleware;
+// NativeWind compiles global.css (Tailwind) for React Native Reusables components.
+// inlineRem: 16 is the rem size Reusables expects.
+const nativeWindConfig = withNativeWind(config, { input: './global.css', inlineRem: 16 });
+
+// expo-sqlite on the web needs SharedArrayBuffer, which browsers only allow with these headers.
+// Added after withNativeWind so its own middleware is kept.
+const enhanceMiddleware = nativeWindConfig.server.enhanceMiddleware;
+nativeWindConfig.server.enhanceMiddleware = (middleware, metroServer) => {
+  const enhancedMiddleware = enhanceMiddleware ? enhanceMiddleware(middleware, metroServer) : middleware;
 
   return (request, response, next) => {
     response.setHeader('Cross-Origin-Embedder-Policy', 'credentialless');
@@ -19,4 +25,4 @@ config.server.enhanceMiddleware = (middleware, metroServer) => {
   };
 };
 
-module.exports = config;
+module.exports = nativeWindConfig;

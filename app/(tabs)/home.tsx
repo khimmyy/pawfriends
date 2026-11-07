@@ -2,6 +2,8 @@ import { NoticeBanner } from '@/components/notice-banner';
 import { PawLogo } from '@/components/paw-logo';
 import { BRAND_FONTS } from '@/constants/fonts';
 import { PostCard } from '@/components/PostCard';
+import { Button } from '@/components/ui/button';
+import { Text as UiText } from '@/components/ui/text';
 import { useAuth } from '@/context/auth';
 import { type Palette } from '@/constants/colors';
 import { useColors } from '@/context/theme';
@@ -171,6 +173,12 @@ export default function FeedScreen() {
             <Text style={styles.emptyText}>
               {searching ? 'Try a pet name or a different word.' : 'Share what your pet is up to and it will show up here.'}
             </Text>
+            {searching ? null : (
+              // React Native Reusables button, styled with Tailwind classes (see components/ui/button.tsx).
+              <Button size="lg" className="mt-4 rounded-full" onPress={openNewPost}>
+                <UiText>Share your first post</UiText>
+              </Button>
+            )}
           </View>
         ) : null}
         <View style={{ height: 16 }} />
