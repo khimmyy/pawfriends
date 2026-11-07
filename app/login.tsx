@@ -47,56 +47,57 @@ export default function LoginScreen() {
     }
   };
 
-  const KeyboardAviodingComponent = () => {
   return (
     <KeyboardAvoidingView
-     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-     style={styles.container}>
-
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={styles.keyboardView}
+    >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-         <View style={styles.container}>
-            <Text style={styles.logo}>🐾</Text>
-              <Text style={styles.title}>Welcome to PawFriends</Text>
-              <Text style={styles.subtitle}>Create your owner account</Text>
+        <View style={styles.container}>
+          <Text style={styles.logo}>🐾</Text>
+          <Text style={styles.title}>Welcome to PawFriends</Text>
+          <Text style={styles.subtitle}>Create your owner account</Text>
 
-              <TextInput
-                style={styles.input}
-                placeholder="Full Name"
-                value={fullName}
-                onChangeText={setFullName}
-              />
+          <TextInput
+            style={styles.input}
+            placeholder="Full Name"
+            value={fullName}
+            onChangeText={setFullName}
+          />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Email Address"
-                keyboardType="email-address"
-                autoCapitalize="none"
-                value={email}
-                onChangeText={setEmail}
-              />
+          <TextInput
+            style={styles.input}
+            placeholder="Email Address"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-              <TextInput
-                style={styles.input}
-                placeholder="Password"
-                secureTextEntry
-                value={password}
-                onChangeText={setPassword}
-              />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
 
-              <TouchableOpacity style={styles.button} onPress={registerOwner}>
-                <Text style={styles.buttonText}>Register Owner</Text>
-              </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={registerOwner}>
+            <Text style={styles.buttonText}>Register Owner</Text>
+          </TouchableOpacity>
 
-            <Text style={styles.loginText}>Already have an account? Log in</Text>
-          </View>
+          <Text style={styles.loginText}>Already have an account? Log in</Text>
+        </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
-   
   );
-};
 }
 
 const styles = StyleSheet.create({
+  keyboardView: {
+    flex: 1,
+    backgroundColor: "#FFF8F0",
+  },
   container: {
     flex: 1,
     backgroundColor: "#FFF8F0",
