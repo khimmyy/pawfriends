@@ -3,12 +3,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-type Post = {
+export type Post = {
   id: number;
   pet: string;
   owner: string;
-  avatar: string;
-  image: string;
+  avatar: string | null;
+  image: string | null;
   caption: string;
   likes: number;
   comments: number;
@@ -30,7 +30,13 @@ export function PostCard({ post }: { post: Post }) {
   return (
     <View style={styles.card}>
       <View style={styles.header}>
-        <Image source={{ uri: post.avatar }} style={styles.avatar} />
+        {post.avatar ? (
+          <Image source={{ uri: post.avatar }} style={styles.avatar} />
+        ) : (
+          <View style={[styles.avatar, styles.avatarPlaceholder]}>
+            <Ionicons name="paw" size={18} color={COLORS.blue} />
+          </View>
+        )}
         <View style={{ flex: 1 }}>
           <Text style={styles.petName}>{post.pet}</Text>
           <Text style={styles.meta}>{post.owner} · {post.time}</Text>
@@ -39,7 +45,7 @@ export function PostCard({ post }: { post: Post }) {
       </View>
 
       <Text style={styles.caption}>{post.caption}</Text>
-      <Image source={{ uri: post.image }} style={styles.postImage} />
+      {post.image ? <Image source={{ uri: post.image }} style={styles.postImage} /> : null}
 
       <View style={styles.countRow}>
         <Text style={styles.meta}>❤️ {count.toLocaleString()}</Text>
@@ -70,6 +76,7 @@ const styles = StyleSheet.create({
   card: { backgroundColor: COLORS.white, marginBottom: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(13,27,62,0.07)' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
   avatar: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: COLORS.blue },
+  avatarPlaceholder: { backgroundColor: COLORS.bg, alignItems: 'center', justifyContent: 'center' },
   petName: { fontWeight: '700', color: COLORS.dark, fontSize: 15 },
   meta: { color: COLORS.muted, fontSize: 12 },
   caption: { color: COLORS.dark, fontSize: 14, lineHeight: 21, paddingHorizontal: 16, paddingBottom: 10 },

@@ -1,17 +1,68 @@
-import { PostCard } from '@/components/PostCard';
+import { PostCard, type Post } from '@/components/PostCard';
 import { COLORS, POSTS, STORIES } from '@/data/pets';
+import { getFeedPosts, type FeedPost } from '@/database/database';
+import { formatTimeAgo } from '@/utils/time';
 import { Ionicons } from '@expo/vector-icons';
+import { router, useFocusEffect } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
+import { useCallback, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+/** Shapes a saved post for PostCard: titled by the pet when one is tagged, otherwise the owner. */
+function toCardPost(post: FeedPost): Post {
+  return {
+    id: post.id,
+    pet: post.petName ?? post.ownerName,
+    owner: `@${post.ownerEmail.split('@')[0]}`,
+    avatar: post.petPhotoUri,
+    image: post.photoUri,
+    caption: post.caption,
+    likes: 0,
+    comments: 0,
+    time: formatTimeAgo(post.createdAt),
+  };
+}
+
+function openNewPost() {
+  router.push('/posts/new');
+}
+
 export default function FeedScreen() {
+  const db = useSQLiteContext();
+  const [posts, setPosts] = useState<FeedPost[]>([]);
+
+  // Reload whenever the feed comes back into view, so a post just shared appears at the top.
+  useFocusEffect(
+    useCallback(() => {
+      let active = true;
+      getFeedPosts(db)
+        .then((result) => {
+          if (active) setPosts(result);
+        })
+        .catch((error: unknown) => {
+          console.warn('Could not load posts', error);
+        });
+      return () => {
+        active = false;
+      };
+    }, [db])
+  );
+
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <View style={styles.header}>
         <Text style={styles.title}>🐾 PawFeed</Text>
         <View style={styles.headerActions}>
           <Pressable style={styles.circleButton}><Ionicons name="search" size={18} color={COLORS.dark} /></Pressable>
-          <Pressable style={styles.circleButton}><Ionicons name="add-circle-outline" size={20} color={COLORS.dark} /></Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Create a post"
+            onPress={openNewPost}
+            style={styles.circleButton}
+          >
+            <Ionicons name="add-circle-outline" size={20} color={COLORS.dark} />
+          </Pressable>
           <Pressable style={styles.circleButton}><Ionicons name="menu-outline" size={18} color={COLORS.dark}/></Pressable>
         </View>
       </View>
@@ -34,12 +85,18 @@ export default function FeedScreen() {
 
         <View style={styles.promptCard}>
           <Image source={{ uri: STORIES[0].avatar }} style={styles.promptAvatar} />
-          <Pressable style={styles.promptButton}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Create a post"
+            onPress={openNewPost}
+            style={styles.promptButton}
+          >
             <Text style={styles.promptText}>What&apos;s your pet up to today?</Text>
           </Pressable>
         </View>
 
-        {POSTS.map((post) => <PostCard key={post.id} post={post} />)}
+        {posts.map((post) => <PostCard key={`saved-${post.id}`} post={toCardPost(post)} />)}
+        {POSTS.map((post) => <PostCard key={`sample-${post.id}`} post={post} />)}
         <View style={{ height: 16 }} />
       </ScrollView>
     </SafeAreaView>

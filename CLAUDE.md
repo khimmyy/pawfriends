@@ -2,7 +2,7 @@
 
 # PawFriends
 
-Cross-platform pet community prototype (Expo SDK 57, React Native 0.86, React 19.2, strict TypeScript 6, Expo Router with typed routes, React Compiler, Expo SQLite). Owner registration is stored locally in SQLite; the feed, adoption, vet, activity, and profile tabs still use static data from `data/pets.ts`.
+Cross-platform pet community prototype (Expo SDK 57, React Native 0.86, React 19.2, strict TypeScript 6, Expo Router with typed routes, React Compiler, Expo SQLite). Owners, the signed-in session, pets and posts are stored locally in SQLite (`database/database.ts`, schema version 4). Adoption, vet, activity, the feed's sample posts and the profile stats still use static data from `data/pets.ts`.
 
 ## Commands
 
@@ -28,6 +28,9 @@ In a `.claude/worktrees/*` checkout, run `npm ci` there first; a junction to the
 - `app/login.tsx` (sign in) and `app/register.tsx` (create account) share `components/auth-form.tsx`; validation rules are in `constants/validation.ts`
 - `context/auth.tsx` — `AuthProvider` / `useAuth()` exposing `owner`, `isLoading`, `signIn`, `register`, `signOut`; the session is the single-row `session` table, so it survives restarts
 - `app/(tabs)/` — `home`, `adoption`, `veterinary`, `notifications`, `profile`; tabs are declared in `app/(tabs)/_layout.tsx`
+- `app/pets/new.tsx`, `app/pets/[id].tsx` (add and edit a pet, sharing `components/pet-form.tsx`) and `app/posts/new.tsx` (create a post); each must also be listed in the signed-in `Stack.Protected` block in `app/_layout.tsx`
+- PawFeed shows saved posts (`getFeedPosts`) above the sample `POSTS`; it reloads with `useFocusEffect` so new posts appear on return
+- `utils/` — `pet-photos.ts` (pick photos and copy them into app storage; native only), `navigation.ts` (`goBackOr`, for screens that can be opened without history on the web), `time.ts` (`formatTimeAgo` for SQLite UTC timestamps)
 - `components/` — `PostCard.tsx` is live; `ui/*`, `themed-*`, `parallax-scroll-view`, `hello-wave`, `FeedScreen.tsx` and `app/modal.tsx` are template leftovers and unused
 - `database/database.ts` — all schema migrations and queries
 - `data/pets.ts` — `COLORS` palette and mock data used by the screens

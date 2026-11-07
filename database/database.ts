@@ -1,7 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-const DATABASE_VERSION = 3;
+const DATABASE_VERSION = 4;
 
 export async function initializeDatabase(db: SQLiteDatabase) {
   await db.execAsync(`
@@ -53,6 +53,21 @@ export async function initializeDatabase(db: SQLiteDatabase) {
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
       CREATE INDEX IF NOT EXISTS idx_pets_owner ON pets(owner_id);
+    `);
+  }
+
+  if (currentVersion < 4) {
+    // pet_id is optional: a post can be about no pet, and deleting a pet keeps its posts.
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS posts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id INTEGER NOT NULL REFERENCES owners(id) ON DELETE CASCADE,
+        pet_id INTEGER REFERENCES pets(id) ON DELETE SET NULL,
+        caption TEXT NOT NULL,
+        photo_uri TEXT,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at);
     `);
   }
 
@@ -257,4 +272,87 @@ export async function getPetsForOwner(
     petId,
     ownerId
   );
+}
+
+export type PostInput = {
+  /** The pet the post is about, or null for a post about no particular pet. */
+  petId: number | null;
+  caption: string;
+  photoUri: string | null;
+};
+
+/** A post with the names needed to show it in the feed. */
+export type FeedPost = {
+  id: number;
+  ownerId: number;
+  ownerName: string;
+  ownerEmail: string;
+  petId: number | null;
+  petName: string | null;
+  petPhotoUri: string | null;
+  caption: string;
+  photoUri: string | null;
+  /** SQLite CURRENT_TIMESTAMP in UTC, e.g. "2026-11-07 14:05:09". */
+  createdAt: string;
+};
+
+type FeedPostRow = {
+  id: number;
+  owner_id: number;
+  owner_name: string;
+  owner_email: string;
+  pet_id: number | null;
+  pet_name: string | null;
+  pet_photo_uri: string | null;
+  caption: string;
+  photo_uri: string | null;
+  created_at: string;
+};
+
+function toFeedPost(row: FeedPostRow): FeedPost {
+  return {
+    id: row.id,
+    ownerId: row.owner_id,
+    ownerName: row.owner_name,
+    ownerEmail: row.owner_email,
+    petId: row.pet_id,
+    petName: row.pet_name,
+    petPhotoUri: row.pet_photo_uri,
+    caption: row.caption,
+    photoUri: row.photo_uri,
+    createdAt: row.created_at,
+  };
+}
+
+/** Saves a post and returns its id. Throws if petId is not one of the owner's pets. */
+export async function addPost(db: SQLiteDatabase, ownerId: number, input: PostInput): Promise<number> {
+  if (input.petId !== null && !(await getPet(db, ownerId, input.petId))) {
+    throw new Error('That pet does not belong to this owner.');
+  }
+
+  const result = await db.runAsync(
+    `INSERT INTO posts (owner_id, pet_id, caption, photo_uri)
+     VALUES (?, ?, ?, ?)`,
+    ownerId,
+    input.petId,
+    input.caption,
+    input.photoUri
+  );
+  return result.lastInsertRowId;
+}
+
+/** The newest posts on this device, newest first. */
+export async function getFeedPosts(db: SQLiteDatabase, limit = 50): Promise<FeedPost[]> {
+  const rows = await db.getAllAsync<FeedPostRow>(
+    `SELECT posts.id, posts.owner_id, owners.full_name AS owner_name, owners.email AS owner_email,
+            posts.pet_id, pets.name AS pet_name, pets.photo_uri AS pet_photo_uri,
+            posts.caption, posts.photo_uri, posts.created_at
+     FROM posts
+     JOIN owners ON owners.id = posts.owner_id
+     LEFT JOIN pets ON pets.id = posts.pet_id
+     ORDER BY posts.created_at DESC, posts.id DESC
+     LIMIT ?`,
+    limit
+  );
+  return rows.map(toFeedPost);
 }

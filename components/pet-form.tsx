@@ -1,25 +1,18 @@
 import { AuthButton, AuthField, FormError } from '@/components/auth-form';
 import { COLORS } from '@/data/pets';
 import { PET_SPECIES, type PetInput, type PetSpecies } from '@/database/database';
-import { pickPetPhoto, savePetPhoto } from '@/utils/pet-photos';
+import { goBackOr } from '@/utils/navigation';
+import { pickPhoto, savePetPhoto } from '@/utils/pet-photos';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
 import { useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const BIRTHDAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
-/**
- * Returns to the previous screen, or to Profile when there is none
- * (for example after the page was reloaded or opened from a link on the web).
- */
+/** Leaves a pet screen, going to Profile when there is no previous screen. */
 export function leavePetScreen() {
-  if (router.canGoBack()) {
-    router.back();
-  } else {
-    router.replace('/(tabs)/profile');
-  }
+  goBackOr('/(tabs)/profile');
 }
 
 type PetFormProps = {
@@ -42,7 +35,7 @@ export function PetForm({ title, submitLabel, initial, onSubmit }: PetFormProps)
 
   const choosePhoto = async () => {
     try {
-      const picked = await pickPetPhoto();
+      const picked = await pickPhoto();
       if (picked) {
         setPhotoUri(picked);
       }

@@ -1,6 +1,8 @@
 import {
   addPet,
+  addPost,
   clearSession,
+  getFeedPosts,
   getPet,
   getPetsForOwner,
   getSessionOwner,
@@ -24,7 +26,7 @@ jest.mock('expo-crypto', () => {
   };
 });
 
-const LATEST_VERSION = 3;
+const LATEST_VERSION = 4;
 
 async function freshDatabase() {
   const test = createTestDatabase();
@@ -44,11 +46,11 @@ describe('initializeDatabase', () => {
   it('creates every table on a fresh install', async () => {
     const { raw } = await freshDatabase();
 
-    expect(tableNames(raw)).toEqual(expect.arrayContaining(['owners', 'pets', 'session']));
+    expect(tableNames(raw)).toEqual(expect.arrayContaining(['owners', 'pets', 'posts', 'session']));
     expect(userVersion(raw)).toBe(LATEST_VERSION);
   });
 
-  it('adds the pets table to an existing version 2 install', async () => {
+  it('adds the pets and posts tables to an existing version 2 install', async () => {
     const { db, raw } = createTestDatabase();
     // What a phone that installed the app before the pets feature already has.
     raw.exec(`
@@ -70,8 +72,22 @@ describe('initializeDatabase', () => {
 
     await initializeDatabase(db);
 
-    expect(tableNames(raw)).toContain('pets');
+    expect(tableNames(raw)).toEqual(expect.arrayContaining(['pets', 'posts']));
     expect(userVersion(raw)).toBe(LATEST_VERSION);
+  });
+
+  it('adds the posts table to an existing version 3 install and keeps its pets', async () => {
+    const { db, raw } = await freshDatabase();
+    const owner = await registerOwner(db, { fullName: 'Khim', email: 'khim@example.com', password: 'password-1' });
+    const petId = await addPet(db, owner.id, MOCHI);
+    // Turn this back into what a phone had before the posts feature.
+    raw.exec('DROP TABLE posts; PRAGMA user_version = 3;');
+
+    await initializeDatabase(db);
+
+    expect(tableNames(raw)).toContain('posts');
+    expect(userVersion(raw)).toBe(LATEST_VERSION);
+    await expect(getPet(db, owner.id, petId)).resolves.toMatchObject({ name: 'Mochi' });
   });
 
   it('can run again on every launch without failing', async () => {
@@ -192,5 +208,106 @@ describe('pets', () => {
     raw.prepare('DELETE FROM owners WHERE id = ?').run(khim.id);
 
     await expect(getPetsForOwner(db, khim.id)).resolves.toEqual([]);
+  });
+});
+
+describe('posts', () => {
+  async function databaseWithOwnerAndPet() {
+    const test = await freshDatabase();
+    const khim = await registerOwner(test.db, { fullName: 'Khim Test', email: 'khim@example.com', password: 'password-1' });
+    const sam = await registerOwner(test.db, { fullName: 'Sam', email: 'sam@example.com', password: 'password-2' });
+    const mochiId = await addPet(test.db, khim.id, MOCHI);
+    return { ...test, khim, sam, mochiId };
+  }
+
+  it('starts with an empty feed', async () => {
+    const { db } = await freshDatabase();
+
+    await expect(getFeedPosts(db)).resolves.toEqual([]);
+  });
+
+  it('saves a post about a pet and shows it with the pet and owner names', async () => {
+    const { db, khim, mochiId } = await databaseWithOwnerAndPet();
+
+    const postId = await addPost(db, khim.id, {
+      petId: mochiId,
+      caption: 'Zoomies in the garden!',
+      photoUri: 'file:///post-photos/zoomies.jpg',
+    });
+
+    const [post] = await getFeedPosts(db);
+    expect(post).toMatchObject({
+      id: postId,
+      ownerId: khim.id,
+      ownerName: 'Khim Test',
+      ownerEmail: 'khim@example.com',
+      petId: mochiId,
+      petName: 'Mochi',
+      petPhotoUri: MOCHI.photoUri,
+      caption: 'Zoomies in the garden!',
+      photoUri: 'file:///post-photos/zoomies.jpg',
+    });
+    expect(post.createdAt).toMatch(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  });
+
+  it('saves a post with no pet and no photo', async () => {
+    const { db, khim } = await databaseWithOwnerAndPet();
+
+    await addPost(db, khim.id, { petId: null, caption: 'Hello PawFriends', photoUri: null });
+
+    await expect(getFeedPosts(db)).resolves.toEqual([
+      expect.objectContaining({ petId: null, petName: null, petPhotoUri: null, photoUri: null }),
+    ]);
+  });
+
+  it('lists the newest posts first', async () => {
+    const { db, khim, sam } = await databaseWithOwnerAndPet();
+    await addPost(db, khim.id, { petId: null, caption: 'first', photoUri: null });
+    await addPost(db, sam.id, { petId: null, caption: 'second', photoUri: null });
+    await addPost(db, khim.id, { petId: null, caption: 'third', photoUri: null });
+
+    const captions = (await getFeedPosts(db)).map((post) => post.caption);
+
+    expect(captions).toEqual(['third', 'second', 'first']);
+  });
+
+  it('returns at most the requested number of posts', async () => {
+    const { db, khim } = await databaseWithOwnerAndPet();
+    for (const caption of ['a', 'b', 'c']) {
+      await addPost(db, khim.id, { petId: null, caption, photoUri: null });
+    }
+
+    await expect(getFeedPosts(db, 2)).resolves.toHaveLength(2);
+  });
+
+  it('refuses to tag another owner’s pet', async () => {
+    const { db, sam, mochiId } = await databaseWithOwnerAndPet();
+
+    await expect(addPost(db, sam.id, { petId: mochiId, caption: 'Not my pet', photoUri: null })).rejects.toThrow(
+      'That pet does not belong to this owner.'
+    );
+    await expect(getFeedPosts(db)).resolves.toEqual([]);
+  });
+
+  it('keeps a post when its pet is deleted', async () => {
+    const { db, raw, khim, mochiId } = await databaseWithOwnerAndPet();
+    await addPost(db, khim.id, { petId: mochiId, caption: 'Remember Mochi', photoUri: null });
+
+    raw.prepare('DELETE FROM pets WHERE id = ?').run(mochiId);
+
+    await expect(getFeedPosts(db)).resolves.toEqual([
+      expect.objectContaining({ caption: 'Remember Mochi', petId: null, petName: null }),
+    ]);
+  });
+
+  it('removes an owner’s posts when the owner is deleted', async () => {
+    const { db, raw, khim, sam } = await databaseWithOwnerAndPet();
+    await addPost(db, khim.id, { petId: null, caption: 'from Khim', photoUri: null });
+    await addPost(db, sam.id, { petId: null, caption: 'from Sam', photoUri: null });
+
+    raw.prepare('DELETE FROM owners WHERE id = ?').run(khim.id);
+
+    const captions = (await getFeedPosts(db)).map((post) => post.caption);
+    expect(captions).toEqual(['from Sam']);
   });
 });
