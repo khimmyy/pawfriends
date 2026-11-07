@@ -11,7 +11,11 @@ Cross-platform pet community prototype (Expo SDK 57, React Native 0.86, React 19
 - `npx tsc --noEmit` — type check; must pass
 - Install Expo/RN packages with `npx expo install <pkg>`, never plain `npm install`, and do not upgrade SDK packages unless asked
 
-There are no automated tests yet. Lint and type check are the required checks; say which platforms you actually ran.
+- `npm test` — Jest (`jest-expo` preset); tests live in `__tests__/`
+
+Lint, type check and `npm test` must all pass; say which platforms you actually ran the app on.
+
+`__tests__/database.test.ts` runs the real migrations and queries in `database/database.ts` against Node's built-in SQLite through `test-utils/sqlite.ts` (needs Node 22.13+), with `expo-crypto` backed by Node's `crypto`. When you change the schema, add a test that upgrades from the previous `user_version`.
 
 Keep `web.output` in `app.json` as `"single"`. With `"static"`, the dev server pre-renders pages with a serializer that cannot handle the expo-sqlite web worker and fails with `Worker chunk not found for: ...expo-sqlite/web/worker.ts`. Do not work around it with `EXPO_NO_METRO_LAZY`: the page then loads but the worker fails with "Bundle splitting is required for Web Worker imports".
 
