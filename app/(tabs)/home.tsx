@@ -1,4 +1,5 @@
 import { NoticeBanner } from '@/components/notice-banner';
+import { PawLogo } from '@/components/paw-logo';
 import { PostCard } from '@/components/PostCard';
 import { useAuth } from '@/context/auth';
 import { COLORS, STORIES } from '@/data/pets';
@@ -58,7 +59,10 @@ export default function FeedScreen() {
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.title}>🐾 PawFeed</Text>
+        <View style={styles.brand}>
+          <PawLogo size={30} accessibilityLabel={null} />
+          <Text style={styles.title}>PawFeed</Text>
+        </View>
         <View style={styles.headerActions}>
           <Pressable
             accessibilityRole="button"
@@ -153,7 +157,11 @@ export default function FeedScreen() {
 
         {posts.length === 0 ? (
           <View style={styles.empty}>
-            <Ionicons name={searching ? 'search' : 'paw'} size={32} color={COLORS.muted} />
+            {searching ? (
+              <Ionicons name="search" size={32} color={COLORS.muted} />
+            ) : (
+              <PawLogo size={44} accessibilityLabel={null} />
+            )}
             <Text style={styles.emptyTitle}>{searching ? 'No posts match your search' : 'No posts yet'}</Text>
             <Text style={styles.emptyText}>
               {searching ? 'Try a pet name or a different word.' : 'Share what your pet is up to and it will show up here.'}
@@ -171,6 +179,7 @@ export default function FeedScreen() {
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.bg },
   header: { backgroundColor: COLORS.white, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: 'rgba(13,27,62,0.08)' },
+  brand: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { fontSize: 25, fontWeight: '800', color: COLORS.blue },
   headerActions: { flexDirection: 'row', gap: 8 },
   circleButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: COLORS.bg, alignItems: 'center', justifyContent: 'center' },

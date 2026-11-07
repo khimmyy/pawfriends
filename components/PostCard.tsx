@@ -1,3 +1,4 @@
+import { PawLogo } from '@/components/paw-logo';
 import { COLORS } from '@/data/pets';
 import type { FeedPost } from '@/database/database';
 import { formatTimeAgo } from '@/utils/time';
@@ -28,7 +29,7 @@ export function PostCard({ post, onLike, onComment, onShare, onSave }: PostCardP
           <Image source={{ uri: post.petPhotoUri }} style={styles.avatar} />
         ) : (
           <View style={[styles.avatar, styles.avatarPlaceholder]}>
-            <Ionicons name="paw" size={18} color={COLORS.blue} />
+            <PawLogo size={24} accessibilityLabel={null} />
           </View>
         )}
         <View style={{ flex: 1 }}>

@@ -1,3 +1,4 @@
+import { PawLogo } from '@/components/paw-logo';
 import type { PropsWithChildren } from 'react';
 import {
   ActivityIndicator,
@@ -43,7 +44,9 @@ export function AuthScreen({ title, subtitle, children }: AuthScreenProps) {
           keyboardShouldPersistTaps="handled"
           onScrollBeginDrag={Keyboard.dismiss}
         >
-          <Text style={styles.logo}>🐾</Text>
+          <View style={styles.logo}>
+            <PawLogo size={84} />
+          </View>
           <Text style={styles.title} accessibilityRole="header">
             {title}
           </Text>
@@ -138,7 +141,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.bg },
   flex: { flex: 1 },
   content: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  logo: { fontSize: 70, textAlign: 'center' },
+  logo: { alignItems: 'center' },
   title: {
     fontSize: 28,
     fontWeight: 'bold',

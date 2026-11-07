@@ -1,3 +1,4 @@
+import { PawLogo } from '@/components/paw-logo';
 import { useAuth } from '@/context/auth';
 import { getPetsForOwner, type Pet } from '@/database/database';
 import { Ionicons } from '@expo/vector-icons';
@@ -52,7 +53,7 @@ export default function ProfileScreen() {
             <Image source={{ uri: pets[0].photoUri }} style={styles.avatar} />
               ) : (
                 <View style={[styles.avatar, styles.avatarPlaceholder]}>
-                  <Ionicons name="paw" size={40} color={COLORS.blue} />
+                  <PawLogo size={56} accessibilityLabel={null} />
                 </View>
               )}
             <Text style={styles.name}>{owner?.fullName}</Text>
@@ -93,7 +94,7 @@ export default function ProfileScreen() {
                     <Image source={{ uri: pet.photoUri }} style={styles.petPhoto} />
                   ) : (
                     <View style={[styles.petPhoto, styles.avatarPlaceholder]}>
-                      <Ionicons name="paw" size={20} color={COLORS.blue} />
+                      <PawLogo size={28} accessibilityLabel={null} />
                     </View>
                   )}
                   <View style={{ flex: 1 }}>
