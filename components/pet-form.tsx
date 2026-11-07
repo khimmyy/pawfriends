@@ -10,6 +10,18 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const BIRTHDAY_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 
+/**
+ * Returns to the previous screen, or to Profile when there is none
+ * (for example after the page was reloaded or opened from a link on the web).
+ */
+export function leavePetScreen() {
+  if (router.canGoBack()) {
+    router.back();
+  } else {
+    router.replace('/(tabs)/profile');
+  }
+}
+
 type PetFormProps = {
   title: string;
   submitLabel: string;
@@ -78,7 +90,7 @@ export function PetForm({ title, submitLabel, initial, onSubmit }: PetFormProps)
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Go back"
-          onPress={() => router.back()}
+          onPress={leavePetScreen}
           style={styles.backButton}
           hitSlop={8}
         >

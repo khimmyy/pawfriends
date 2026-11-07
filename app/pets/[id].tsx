@@ -1,9 +1,9 @@
-import { PetForm } from '@/components/pet-form';
+import { leavePetScreen, PetForm } from '@/components/pet-form';
 import { useAuth } from '@/context/auth';
 import { COLORS } from '@/data/pets';
 import { getPet, updatePet, type Pet, type PetInput } from '@/database/database';
 import { deletePetPhoto } from '@/utils/pet-photos';
-import { router, useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -45,7 +45,7 @@ export default function EditPetScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.message}>We could not find that pet.</Text>
-        <Pressable accessibilityRole="button" onPress={() => router.back()} hitSlop={8}>
+        <Pressable accessibilityRole="button" onPress={leavePetScreen} hitSlop={8}>
           <Text style={styles.link}>Go back</Text>
         </Pressable>
       </View>
@@ -58,7 +58,7 @@ export default function EditPetScreen() {
     if (pet.photoUri && pet.photoUri !== input.photoUri) {
       deletePetPhoto(pet.photoUri);
     }
-    router.back();
+    leavePetScreen();
   };
 
   return <PetForm title={`Edit ${pet.name}`} submitLabel="Save changes" initial={pet} onSubmit={handleSubmit} />;

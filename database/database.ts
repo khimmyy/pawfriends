@@ -1,7 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-const DATABASE_VERSION = 2;
+const DATABASE_VERSION = 3;
 
 export async function initializeDatabase(db: SQLiteDatabase) {
   await db.execAsync(`
@@ -42,18 +42,18 @@ export async function initializeDatabase(db: SQLiteDatabase) {
 
   if (currentVersion < 3) {
     await db.execAsync(`
-        CREATE TABLE IF NOT EXISTS pets (
-        id INTEGER PRIMARY KEY AUTOINCREMENT.
-        owner_id INTEGER NOT NULL REFERENCES
-        owners(id) ON DELETE CASCADE,
-        name TEXT NOT null,
-        species TEXT NOT null,
+      CREATE TABLE IF NOT EXISTS pets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        owner_id INTEGER NOT NULL REFERENCES owners(id) ON DELETE CASCADE,
+        name TEXT NOT NULL,
+        species TEXT NOT NULL,
         breed TEXT,
         birthday TEXT,
         photo_uri TEXT,
-        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP);
-        CREATE INDEX IF NOT EXISTS idx_pets_owner ON PermissionStatus(owner_id);
-      `);
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_pets_owner ON pets(owner_id);
+    `);
   }
 
   await db.execAsync(`PRAGMA user_version = ${DATABASE_VERSION}`);
