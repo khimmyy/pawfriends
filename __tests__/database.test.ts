@@ -9,10 +9,12 @@ import {
   getPetsForOwner,
   getPost,
   getSessionOwner,
+  getSetting,
   initializeDatabase,
   MAX_COMMENT_LENGTH,
   registerOwner,
   saveSession,
+  setSetting,
   toggleLike,
   toggleSave,
   updatePet,
@@ -32,7 +34,7 @@ jest.mock('expo-crypto', () => {
   };
 });
 
-const LATEST_VERSION = 5;
+const LATEST_VERSION = 6;
 
 async function freshDatabase() {
   const test = createTestDatabase();
@@ -52,7 +54,7 @@ describe('initializeDatabase', () => {
   it('creates every table on a fresh install', async () => {
     const { raw } = await freshDatabase();
 
-    expect(tableNames(raw)).toEqual(expect.arrayContaining(['comments', 'owners', 'pets', 'post_likes', 'post_saves', 'posts', 'session']));
+    expect(tableNames(raw)).toEqual(expect.arrayContaining(['comments', 'owners', 'pets', 'post_likes', 'post_saves', 'posts', 'session', 'settings']));
     expect(userVersion(raw)).toBe(LATEST_VERSION);
   });
 
@@ -442,5 +444,35 @@ describe('likes, saves, comments and search', () => {
     const { db, khim } = await databaseWithPosts();
 
     await expect(getFeedPosts(db, khim.id, { search: '   ' })).resolves.toHaveLength(2);
+  });
+});
+
+describe('settings', () => {
+  it('returns null for a setting that was never saved', async () => {
+    const { db } = await freshDatabase();
+
+    await expect(getSetting(db, 'appearance')).resolves.toBeNull();
+  });
+
+  it('saves a setting and replaces it when saved again', async () => {
+    const { db } = await freshDatabase();
+
+    await setSetting(db, 'appearance', 'dark');
+    await expect(getSetting(db, 'appearance')).resolves.toBe('dark');
+
+    await setSetting(db, 'appearance', 'system');
+    await expect(getSetting(db, 'appearance')).resolves.toBe('system');
+  });
+
+  it('adds the settings table to an existing version 5 install and keeps its data', async () => {
+    const { db, raw } = await freshDatabase();
+    const owner = await registerOwner(db, { fullName: 'Khim', email: 'khim@example.com', password: 'password-1' });
+    raw.exec('DROP TABLE settings; PRAGMA user_version = 5;');
+
+    await initializeDatabase(db);
+
+    expect(tableNames(raw)).toContain('settings');
+    expect(userVersion(raw)).toBe(LATEST_VERSION);
+    await expect(verifyOwner(db, 'khim@example.com', 'password-1')).resolves.toEqual(owner);
   });
 });

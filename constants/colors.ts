@@ -1,30 +1,34 @@
 /**
- * The PawFriends palette ("cozy and modern"): violet with ink text on pale lavender,
- * mint and coral accents. Every screen reads its colors from here; the logo and app
- * icons use the same values in scripts/generate-logo-assets.js and app.json.
+ * The PawFriends palettes ("cozy and modern"): violet with ink text on pale lavender,
+ * mint and coral accents, in a light and a dark version. Screens get the active one
+ * from useColors() in context/theme.tsx; never import a palette into a screen directly.
  *
- * The *Text variants are darker shades for small text on white, where the bright
- * accents would be too faint to read.
+ * Both palettes have the same keys. The *Text variants are shades of an accent that
+ * stay readable as small text on `surface`. The logo script and app.json repeat a few
+ * light values (primary, page, heart) and the dark `page`; change them together.
  */
-export const COLORS = {
-  /** Main brand color: buttons, logo, active tab, links in the brand voice. */
+export const lightColors = {
+  /** Main brand color: buttons, logo, active tab, the sign-in header. */
   primary: '#7A4FE0',
   primaryPressed: '#6339CC',
   /** Pale violet for selected chips, info messages and icon tiles. */
   primarySoft: '#EDE6FF',
-  /** Light text on primary backgrounds, such as the sign-in tagline. */
+  /** Text and icons placed on `primary`. */
+  onPrimary: '#FFFFFF',
+  /** Secondary text on `primary`, such as the sign-in tagline. */
   onPrimaryMuted: '#E3D9FF',
 
-  /** Ink: headings and body text. */
+  /** Headings and body text. */
   text: '#221B3A',
-  /** Lavender gray: secondary text, placeholders, inactive icons. */
-  muted: '#7D769A',
+  /** Secondary text, placeholders, inactive icons. */
+  muted: '#6F6890',
 
-  /** Pale lavender page background. */
+  /** Screen background. */
   page: '#F6F3FF',
-  white: '#FFFFFF',
+  /** Cards, headers, sheets and the tab bar. */
+  surface: '#FFFFFF',
   border: '#E7E1F7',
-  /** Placeholder behind images while they load. */
+  /** Shown behind images while they load. */
   imagePlaceholder: '#E4DCFA',
 
   /** Mint: saved posts and positive accents. */
@@ -38,4 +42,39 @@ export const COLORS = {
   /** Errors (a raspberry red, distinct from the coral heart). */
   danger: '#C8325B',
   dangerSoft: '#FDECF1',
-} as const;
+};
+
+export type Palette = typeof lightColors;
+
+/**
+ * Dark version: a lighter violet with dark text on it (white on light violet is too faint),
+ * deep plum-black backgrounds, and brighter accents.
+ */
+export const darkColors: Palette = {
+  primary: '#A78BFA',
+  primaryPressed: '#8E6FF0',
+  primarySoft: '#2C2347',
+  onPrimary: '#1A1033',
+  onPrimaryMuted: '#2E2052',
+
+  text: '#EDE9FF',
+  muted: '#A9A2C4',
+
+  page: '#13101C',
+  surface: '#1D1929',
+  border: '#2F2944',
+  imagePlaceholder: '#2A2440',
+
+  accent: '#34D3AE',
+  accentText: '#5EE0C0',
+
+  heart: '#FF9A7A',
+  heartText: '#FFA88C',
+
+  danger: '#FF6B8B',
+  dangerSoft: '#3A1A26',
+};
+
+export type ColorScheme = 'light' | 'dark';
+
+export const PALETTES: Record<ColorScheme, Palette> = { light: lightColors, dark: darkColors };

@@ -2,7 +2,8 @@ import { NoticeBanner } from '@/components/notice-banner';
 import { PostCard } from '@/components/PostCard';
 import { ScreenHeader } from '@/components/screen-header';
 import { useAuth } from '@/context/auth';
-import { COLORS } from '@/constants/colors';
+import { type Palette } from '@/constants/colors';
+import { useColors } from '@/context/theme';
 import { getFeedPosts, type FeedPost } from '@/database/database';
 import { usePostActions } from '@/hooks/use-post-actions';
 import { goBackOr } from '@/utils/navigation';
@@ -18,6 +19,8 @@ function leaveSavedPosts() {
 }
 
 export default function SavedPostsScreen() {
+  const colors = useColors();
+  const styles = createStyles(colors);
   const db = useSQLiteContext();
   const { owner } = useAuth();
   const [posts, setPosts] = useState<FeedPost[]>([]);
@@ -66,7 +69,7 @@ export default function SavedPostsScreen() {
         ))}
         {posts.length === 0 ? (
           <View style={styles.empty}>
-            <Ionicons name="bookmark-outline" size={32} color={COLORS.muted} />
+            <Ionicons name="bookmark-outline" size={32} color={colors.muted} />
             <Text style={styles.emptyTitle}>Nothing saved yet</Text>
             <Text style={styles.emptyText}>Tap Save on a post in PawFeed to keep it here.</Text>
           </View>
@@ -77,9 +80,10 @@ export default function SavedPostsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.page },
+const createStyles = (c: Palette) =>
+  StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: c.page },
   empty: { alignItems: 'center', paddingHorizontal: 32, paddingVertical: 48, gap: 6 },
-  emptyTitle: { color: COLORS.text, fontSize: 16, fontWeight: '700', marginTop: 6 },
-  emptyText: { color: COLORS.muted, textAlign: 'center' },
+  emptyTitle: { color: c.text, fontSize: 16, fontWeight: '700', marginTop: 6 },
+  emptyText: { color: c.muted, textAlign: 'center' },
 });

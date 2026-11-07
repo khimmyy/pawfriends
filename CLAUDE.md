@@ -2,7 +2,7 @@
 
 # PawFriends
 
-Cross-platform pet community prototype (Expo SDK 57, React Native 0.86, React 19.2, strict TypeScript 6, Expo Router with typed routes, React Compiler, Expo SQLite). Owners, the signed-in session, pets, posts, likes, saves and comments are stored locally in SQLite (`database/database.ts`, schema version 5). Stories, adoption, vet, activity and the profile stats and post grid still use static data from `data/pets.ts`.
+Cross-platform pet community prototype (Expo SDK 57, React Native 0.86, React 19.2, strict TypeScript 6, Expo Router with typed routes, React Compiler, Expo SQLite). Owners, the signed-in session, pets, posts, likes, saves, comments and app settings are stored locally in SQLite (`database/database.ts`, schema version 6). Stories, adoption, vet, activity and the profile stats and post grid still use static data from `data/pets.ts`.
 
 ## Commands
 
@@ -34,16 +34,17 @@ In a `.claude/worktrees/*` checkout, run `npm ci` there first; a junction to the
 - PawFeed shows posts from the database only (`getFeedPosts(db, viewerId, { search, savedOnly })`), with search in the header; it reloads with `useFocusEffect` so new posts and comment counts appear on return
 - `components/PostCard.tsx` is presentational: it takes a `FeedPost` and `onLike` / `onComment` / `onShare` / `onSave`. Screens get those from `hooks/use-post-actions.ts`, which updates the post in the screen's list and returns a `notice` for `components/notice-banner.tsx`
 - Logo: a violet paw with a coral heart in the pad. Its shapes live in `constants/logo-shape.json`; `components/paw-logo.tsx` (`PawLogo`) draws it in the app, and `npm run generate-logo` (`scripts/generate-logo-assets.js`) redraws `assets/images/` icon, Android icon layers, splash image, favicon and `logo.svg` from the same file. Change the JSON, then rerun the script; don't edit those PNGs by hand
-- `components/animated-splash.tsx` waves the logo on launch: `app/_layout.tsx` keeps the native splash (lavender `#F6F3FF` in `app.json`) up until the database opens, then shows this over the app until the session has loaded (at least 1.7 s; still when the device asks for reduced motion)
+- `components/animated-splash.tsx` waves the logo on launch: `app/_layout.tsx` keeps the native splash (lavender `#F6F3FF`, or `#13101C` with `splash-icon-dark.png` in dark mode, in `app.json`) up until the database opens, then shows this over the app until the session has loaded (at least 1.7 s; still when the device asks for reduced motion)
 - `utils/` — `pet-photos.ts` (pick photos and copy them into app storage; native only), `navigation.ts` (`goBackOr`, for screens that can be opened without history on the web), `time.ts` (`formatTimeAgo` for SQLite UTC timestamps), `share.ts` (system share sheet; copies to the clipboard in browsers without one)
 - `components/` — `PostCard.tsx` is live; `ui/*`, `themed-*`, `parallax-scroll-view`, `hello-wave`, `FeedScreen.tsx` and `app/modal.tsx` are template leftovers and unused
 - `database/database.ts` — all schema migrations and queries
-- `constants/colors.ts` — the palette (`COLORS`): violet `primary`, ink `text`, lavender `page`, mint `accent`, coral `heart`, with darker `*Text` shades for small text. The logo script and `app.json` repeat a few of these values; change them together. `data/pets.ts` holds only sample content
+- `constants/colors.ts` — `lightColors` and `darkColors` (type `Palette`, same keys): violet `primary` with `onPrimary` for content on it, ink `text`, `muted`, lavender `page`, `surface` for cards and bars, mint `accent`, coral `heart`, with `*Text` shades for small text. `__tests__/colors.test.ts` checks both palettes keep text readable (4.5:1). The logo script and `app.json` repeat a few values; change them together. `data/pets.ts` holds only sample content
+- `context/theme.tsx` — `ThemeProvider` / `useTheme()` / `useColors()`. Appearance is System, Light or Dark (saved in the `settings` table; picked in `components/appearance-picker.tsx` on Profile). `app/_layout.tsx` also passes the palette to the navigation theme (imported from `expo-router/react-navigation`; since SDK 56 the app must not import `@react-navigation/*` directly) and flips the status bar
 
 ## Conventions
 
 - Import with the `@/` alias (maps to repo root).
-- Screens use `SafeAreaView` from `react-native-safe-area-context` with `edges={['top', 'left', 'right']}` and colors from `COLORS` in `constants/colors.ts` (no hard-coded hex values in screens). Styles go in a `StyleSheet.create` at the bottom of the file.
+- Screens use `SafeAreaView` from `react-native-safe-area-context` with `edges={['top', 'left', 'right']}`. Colors always come from the theme: `const colors = useColors(); const styles = createStyles(colors);` with `const createStyles = (c: Palette) => StyleSheet.create({...})` at the bottom of the file, and `colors.x` for inline icon colors. Never hard-code hex values or import a palette into a screen, or dark mode breaks.
 - Return JSX directly from screen components. Never define a component inside another component (it remounts on every render and drops TextInput focus).
 - Icons come from `Ionicons` in `@expo/vector-icons`.
 - Database access goes through functions in `database/database.ts` that take the `SQLiteDatabase` from `useSQLiteContext()`. Always use bound parameters. Schema changes bump `DATABASE_VERSION` and add a step keyed on `PRAGMA user_version` (see the `sqlite-migration` skill).

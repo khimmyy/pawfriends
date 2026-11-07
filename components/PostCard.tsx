@@ -1,5 +1,6 @@
 import { PawLogo } from '@/components/paw-logo';
-import { COLORS } from '@/constants/colors';
+import { type Palette } from '@/constants/colors';
+import { useColors } from '@/context/theme';
 import type { FeedPost } from '@/database/database';
 import { formatTimeAgo } from '@/utils/time';
 import { Ionicons } from '@expo/vector-icons';
@@ -19,6 +20,8 @@ function plural(count: number, word: string) {
 
 /** A feed post. It is titled by the tagged pet, or by the owner when no pet is tagged. */
 export function PostCard({ post, onLike, onComment, onShare, onSave }: PostCardProps) {
+  const colors = useColors();
+  const styles = createStyles(colors);
   const title = post.petName ?? post.ownerName;
   const handle = `@${post.ownerEmail.split('@')[0]}`;
 
@@ -45,7 +48,7 @@ export function PostCard({ post, onLike, onComment, onShare, onSave }: PostCardP
 
       <View style={styles.countRow}>
         <View style={styles.likeCount}>
-          <Ionicons name="heart" size={13} color={COLORS.heart} />
+          <Ionicons name="heart" size={13} color={colors.heart} />
           <Text style={styles.meta}>{post.likeCount.toLocaleString()}</Text>
         </View>
         <Pressable accessibilityRole="button" onPress={() => onComment(post)} hitSlop={8}>
@@ -97,14 +100,12 @@ type ActionButtonProps = {
   onPress: () => void;
 };
 
-// Icons use the bright accent; labels use its darker shade so the small text stays readable.
-const TONES = {
-  heart: { icon: COLORS.heart, text: COLORS.heartText },
-  accent: { icon: COLORS.accent, text: COLORS.accentText },
-} as const;
-
 function ActionButton({ label, accessibilityLabel, icon, active = false, tone = 'accent', onPress }: ActionButtonProps) {
-  const activeColors = TONES[tone];
+  const colors = useColors();
+  const styles = createStyles(colors);
+  // Icons use the bright accent; labels use its darker shade so the small text stays readable.
+  const activeColors =
+    tone === 'heart' ? { icon: colors.heart, text: colors.heartText } : { icon: colors.accent, text: colors.accentText };
   return (
     <Pressable
       accessibilityRole="button"
@@ -113,24 +114,25 @@ function ActionButton({ label, accessibilityLabel, icon, active = false, tone = 
       onPress={onPress}
       style={styles.actionButton}
     >
-      <Ionicons name={icon} size={18} color={active ? activeColors.icon : COLORS.muted} />
+      <Ionicons name={icon} size={18} color={active ? activeColors.icon : colors.muted} />
       <Text style={[styles.actionText, active && { color: activeColors.text }]}>{label}</Text>
     </Pressable>
   );
 }
 
-const styles = StyleSheet.create({
-  card: { backgroundColor: COLORS.white, marginBottom: 8, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+const createStyles = (c: Palette) =>
+  StyleSheet.create({
+  card: { backgroundColor: c.surface, marginBottom: 8, borderBottomWidth: 1, borderBottomColor: c.border },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
-  avatar: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: COLORS.primary },
-  avatarPlaceholder: { backgroundColor: COLORS.page, alignItems: 'center', justifyContent: 'center' },
-  petName: { fontWeight: '700', color: COLORS.text, fontSize: 15 },
-  meta: { color: COLORS.muted, fontSize: 12 },
-  caption: { color: COLORS.text, fontSize: 14, lineHeight: 21, paddingHorizontal: 16, paddingBottom: 10 },
-  postImage: { width: '100%', height: 320, backgroundColor: COLORS.imagePlaceholder },
-  countRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  avatar: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: c.primary },
+  avatarPlaceholder: { backgroundColor: c.page, alignItems: 'center', justifyContent: 'center' },
+  petName: { fontWeight: '700', color: c.text, fontSize: 15 },
+  meta: { color: c.muted, fontSize: 12 },
+  caption: { color: c.text, fontSize: 14, lineHeight: 21, paddingHorizontal: 16, paddingBottom: 10 },
+  postImage: { width: '100%', height: 320, backgroundColor: c.imagePlaceholder },
+  countRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: c.border },
   likeCount: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   actions: { flexDirection: 'row', paddingHorizontal: 6 },
   actionButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, minHeight: 44 },
-  actionText: { color: COLORS.muted, fontWeight: '600', fontSize: 13 },
+  actionText: { color: c.muted, fontWeight: '600', fontSize: 13 },
 });

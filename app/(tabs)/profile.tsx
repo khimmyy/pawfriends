@@ -1,3 +1,4 @@
+import { AppearancePicker } from '@/components/appearance-picker';
 import { PawLogo } from '@/components/paw-logo';
 import { useAuth } from '@/context/auth';
 import { getPetsForOwner, type Pet } from '@/database/database';
@@ -7,10 +8,13 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS } from '@/constants/colors';
+import { type Palette } from '@/constants/colors';
+import { useColors } from '@/context/theme';
 import { POSTS } from '@/data/pets';
 
 export default function ProfileScreen() {
+  const colors = useColors();
+  const styles = createStyles(colors);
   const { owner, signOut } = useAuth();
   const [signingOut, setSigningOut] = useState(false);
   const db = useSQLiteContext();
@@ -75,7 +79,7 @@ export default function ProfileScreen() {
                 onPress={() => router.push('/pets/new')}
                 style={styles.addPetButton}
               >
-                <Ionicons name="add" size={18} color={COLORS.white} />
+                <Ionicons name="add" size={18} color={colors.onPrimary} />
                 <Text style={styles.addPetText}>Add pet</Text>
               </Pressable>
             </View>
@@ -104,7 +108,7 @@ export default function ProfileScreen() {
                       {[pet.species, pet.breed].filter(Boolean).join(' · ')}
                     </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={COLORS.muted} />
+                  <Ionicons name="chevron-forward" size={18} color={colors.muted} />
                 </Pressable>
               ))
             )}
@@ -114,6 +118,9 @@ export default function ProfileScreen() {
         <View style={styles.grid}>
           {POSTS.map((post) => <Image key={post.id} source={{ uri: post.image }} style={styles.gridImage} />)}
         </View>
+
+        <Text style={styles.sectionTitle}>Appearance</Text>
+        <AppearancePicker />
 
         <Text style={styles.sectionTitle}>Account</Text>
         <View style={styles.accountCard}>
@@ -130,10 +137,10 @@ export default function ProfileScreen() {
             style={({ pressed }) => [styles.signOutButton, pressed && styles.signOutPressed]}
           >
             {signingOut ? (
-              <ActivityIndicator color={COLORS.primary} />
+              <ActivityIndicator color={colors.primary} />
             ) : (
               <>
-                <Ionicons name="log-out-outline" size={18} color={COLORS.primary} />
+                <Ionicons name="log-out-outline" size={18} color={colors.primary} />
                 <Text style={styles.signOutText}>Sign out</Text>
               </>
             )}
@@ -145,6 +152,8 @@ export default function ProfileScreen() {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
+  const colors = useColors();
+  const styles = createStyles(colors);
   return (
     <View style={styles.statItem}>
       <Text style={styles.statValue}>{value}</Text>
@@ -153,36 +162,37 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.page },
-  cover: { height: 120, backgroundColor: COLORS.primary },
-  profileCard: { backgroundColor: COLORS.white, alignItems: 'center', padding: 18, marginBottom: 12 },
-  avatar: { width: 96, height: 96, borderRadius: 48, borderWidth: 4, borderColor: COLORS.white, marginTop: -66 },
-  name: { fontSize: 26, color: COLORS.text, fontWeight: '800', marginTop: 8 },
-  username: { color: COLORS.muted, marginTop: 2 },
-  bio: { color: COLORS.text, textAlign: 'center', marginTop: 10, lineHeight: 20 },
+const createStyles = (c: Palette) =>
+  StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: c.page },
+  cover: { height: 120, backgroundColor: c.primary },
+  profileCard: { backgroundColor: c.surface, alignItems: 'center', padding: 18, marginBottom: 12 },
+  avatar: { width: 96, height: 96, borderRadius: 48, borderWidth: 4, borderColor: c.surface, marginTop: -66 },
+  name: { fontSize: 26, color: c.text, fontWeight: '800', marginTop: 8 },
+  username: { color: c.muted, marginTop: 2 },
+  bio: { color: c.text, textAlign: 'center', marginTop: 10, lineHeight: 20 },
   stats: { flexDirection: 'row', marginTop: 18, width: '100%', justifyContent: 'space-around' },
   statItem: { alignItems: 'center' },
-  statValue: { fontWeight: '800', fontSize: 18, color: COLORS.primary },
-  statLabel: { color: COLORS.muted, fontSize: 12, marginTop: 3 },
-  sectionTitle: { marginHorizontal: 16, marginBottom: 10, color: COLORS.text, fontSize: 18, fontWeight: '800' },
+  statValue: { fontWeight: '800', fontSize: 18, color: c.primary },
+  statLabel: { color: c.muted, fontSize: 12, marginTop: 3 },
+  sectionTitle: { marginHorizontal: 16, marginBottom: 10, color: c.text, fontSize: 18, fontWeight: '800' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 6 },
-  gridImage: { width: '31.8%', aspectRatio: 1, borderRadius: 12, backgroundColor: COLORS.imagePlaceholder },
-  accountCard: { backgroundColor: COLORS.white, marginHorizontal: 16, marginBottom: 24, borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  gridImage: { width: '31.8%', aspectRatio: 1, borderRadius: 12, backgroundColor: c.imagePlaceholder },
+  accountCard: { backgroundColor: c.surface, marginHorizontal: 16, marginBottom: 24, borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
   accountInfo: { flex: 1 },
-  accountName: { color: COLORS.text, fontWeight: '700', fontSize: 15 },
-  accountEmail: { color: COLORS.muted, fontSize: 13, marginTop: 2 },
-  signOutButton: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, minWidth: 110, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 14, backgroundColor: COLORS.page },
+  accountName: { color: c.text, fontWeight: '700', fontSize: 15 },
+  accountEmail: { color: c.muted, fontSize: 13, marginTop: 2 },
+  signOutButton: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, minWidth: 110, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 14, backgroundColor: c.page },
   signOutPressed: { opacity: 0.7 },
-  signOutText: { color: COLORS.primary, fontWeight: '700' },
-  avatarPlaceholder: { backgroundColor: COLORS.page, alignItems: 'center', justifyContent: 'center' },
+  signOutText: { color: c.primary, fontWeight: '700' },
+  avatarPlaceholder: { backgroundColor: c.page, alignItems: 'center', justifyContent: 'center' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, marginBottom: 10 },
-  sectionTitleInline: { color: COLORS.text, fontSize: 18, fontWeight: '800' },
-  addPetButton: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.primary, paddingHorizontal: 12, minHeight: 36, borderRadius: 18 },
-  addPetText: { color: COLORS.white, fontWeight: '700' },
-  emptyText: { color: COLORS.muted, marginHorizontal: 16, marginBottom: 16 },
-  petRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: COLORS.white, marginHorizontal: 16, marginBottom: 8, padding: 12, borderRadius: 14 },
+  sectionTitleInline: { color: c.text, fontSize: 18, fontWeight: '800' },
+  addPetButton: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.primary, paddingHorizontal: 12, minHeight: 36, borderRadius: 18 },
+  addPetText: { color: c.onPrimary, fontWeight: '700' },
+  emptyText: { color: c.muted, marginHorizontal: 16, marginBottom: 16 },
+  petRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: c.surface, marginHorizontal: 16, marginBottom: 8, padding: 12, borderRadius: 14 },
   petPhoto: { width: 48, height: 48, borderRadius: 24 },
-  petName: { color: COLORS.text, fontWeight: '700', fontSize: 15 },
-  petMeta: { color: COLORS.muted, fontSize: 13, marginTop: 2 },
+  petName: { color: c.text, fontWeight: '700', fontSize: 15 },
+  petMeta: { color: c.muted, fontSize: 13, marginTop: 2 },
 });

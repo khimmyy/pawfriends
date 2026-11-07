@@ -1,5 +1,5 @@
 import LOGO from '@/constants/logo-shape.json';
-import { COLORS } from '@/constants/colors';
+import { useColors } from '@/context/theme';
 import { View } from 'react-native';
 import Svg, { Circle, Ellipse, G, Polygon } from 'react-native-svg';
 
@@ -23,10 +23,14 @@ const HEART_POINTS = LOGO.heart.points.map(([x, y]) => `${x},${y}`).join(' ');
  */
 export function PawLogo({
   size = 48,
-  color = COLORS.primary,
-  heartColor = COLORS.heart,
+  color: colorProp,
+  heartColor: heartColorProp,
   accessibilityLabel = 'PawFriends logo',
 }: PawLogoProps) {
+  // Default to the active theme's violet and coral.
+  const colors = useColors();
+  const color = colorProp ?? colors.primary;
+  const heartColor = heartColorProp ?? colors.heart;
   // Accessibility props go on a wrapping View: on the web, react-native-svg would pass them
   // to the <svg> element as invalid HTML attributes.
   const accessibilityProps =

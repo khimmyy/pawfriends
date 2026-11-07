@@ -1,7 +1,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS } from '@/constants/colors';
+import { type Palette } from '@/constants/colors';
+import { useColors } from '@/context/theme';
 
 const SERVICES = [
   { icon: 'medkit-outline', title: 'Vet Checkup', desc: 'Book regular checkups for your pet.' },
@@ -11,6 +12,8 @@ const SERVICES = [
 ];
 
 export default function VeterinaryScreen() {
+  const colors = useColors();
+  const styles = createStyles(colors);
   return (
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.safeArea}>
       <View style={styles.header}>
@@ -20,7 +23,7 @@ export default function VeterinaryScreen() {
       <ScrollView contentContainerStyle={styles.list}>
         {SERVICES.map((item) => (
           <View key={item.title} style={styles.card}>
-            <View style={styles.iconBox}><Ionicons name={item.icon as any} size={24} color={COLORS.primary} /></View>
+            <View style={styles.iconBox}><Ionicons name={item.icon as any} size={24} color={colors.primary} /></View>
             <View style={{ flex: 1 }}>
               <Text style={styles.serviceTitle}>{item.title}</Text>
               <Text style={styles.description}>{item.desc}</Text>
@@ -32,14 +35,15 @@ export default function VeterinaryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.page },
-  header: { backgroundColor: COLORS.white, padding: 18, borderBottomWidth: 1, borderBottomColor: COLORS.border },
-  title: { fontSize: 25, fontWeight: '800', color: COLORS.primary },
-  subtitle: { color: COLORS.muted, marginTop: 4 },
+const createStyles = (c: Palette) =>
+  StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: c.page },
+  header: { backgroundColor: c.surface, padding: 18, borderBottomWidth: 1, borderBottomColor: c.border },
+  title: { fontSize: 25, fontWeight: '800', color: c.primary },
+  subtitle: { color: c.muted, marginTop: 4 },
   list: { padding: 16, gap: 12 },
-  card: { backgroundColor: COLORS.white, borderRadius: 16, padding: 15, flexDirection: 'row', alignItems: 'center', gap: 14 },
-  iconBox: { width: 48, height: 48, borderRadius: 16, backgroundColor: COLORS.page, alignItems: 'center', justifyContent: 'center' },
-  serviceTitle: { color: COLORS.text, fontSize: 16, fontWeight: '800' },
-  description: { color: COLORS.muted, marginTop: 3, lineHeight: 19 },
+  card: { backgroundColor: c.surface, borderRadius: 16, padding: 15, flexDirection: 'row', alignItems: 'center', gap: 14 },
+  iconBox: { width: 48, height: 48, borderRadius: 16, backgroundColor: c.page, alignItems: 'center', justifyContent: 'center' },
+  serviceTitle: { color: c.text, fontSize: 16, fontWeight: '800' },
+  description: { color: c.muted, marginTop: 3, lineHeight: 19 },
 });

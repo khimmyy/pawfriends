@@ -1,7 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-const DATABASE_VERSION = 5;
+const DATABASE_VERSION = 6;
 
 export async function initializeDatabase(db: SQLiteDatabase) {
   await db.execAsync(`
@@ -94,6 +94,16 @@ export async function initializeDatabase(db: SQLiteDatabase) {
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
       CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id, created_at);
+    `);
+  }
+
+  if (currentVersion < 6) {
+    // Device-wide app preferences, such as the light or dark appearance.
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS settings (
+        key TEXT PRIMARY KEY,
+        value TEXT NOT NULL
+      );
     `);
   }
 
@@ -548,4 +558,19 @@ export async function getComments(db: SQLiteDatabase, postId: number): Promise<C
     body: row.body,
     createdAt: row.created_at,
   }));
+}
+
+/** A saved app preference, or null if it has never been set. */
+export async function getSetting(db: SQLiteDatabase, key: string): Promise<string | null> {
+  const row = await db.getFirstAsync<{ value: string }>('SELECT value FROM settings WHERE key = ?', key);
+  return row?.value ?? null;
+}
+
+export async function setSetting(db: SQLiteDatabase, key: string, value: string) {
+  await db.runAsync(
+    `INSERT INTO settings (key, value) VALUES (?, ?)
+     ON CONFLICT(key) DO UPDATE SET value = excluded.value`,
+    key,
+    value
+  );
 }

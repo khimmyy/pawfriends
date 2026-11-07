@@ -1,6 +1,7 @@
 import { PawLogo } from '@/components/paw-logo';
 import { BRAND_FONTS } from '@/constants/fonts';
-import { COLORS } from '@/constants/colors';
+import { type Palette } from '@/constants/colors';
+import { useColors } from '@/context/theme';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text } from 'react-native';
@@ -15,9 +16,6 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-
-/** Matches the native splash background in app.json, so the hand-over is seamless. */
-export const SPLASH_BACKGROUND = COLORS.page;
 
 /** Long enough to see one full wave. */
 const MIN_VISIBLE_MS = 1700;
@@ -39,6 +37,8 @@ type AnimatedSplashProps = {
  * and it has been visible for at least MIN_VISIBLE_MS.
  */
 export function AnimatedSplash({ ready, onFinish }: AnimatedSplashProps) {
+  const colors = useColors();
+  const styles = createStyles(colors);
   const reduceMotion = useReducedMotion();
   const [minTimePassed, setMinTimePassed] = useState(false);
   const opacity = useSharedValue(1);
@@ -106,9 +106,11 @@ export function AnimatedSplash({ ready, onFinish }: AnimatedSplashProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (c: Palette) =>
+  StyleSheet.create({
   container: {
-    backgroundColor: SPLASH_BACKGROUND,
+    // Matches the native splash background in app.json (light and dark), so the hand-over is seamless.
+    backgroundColor: c.page,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 24,
@@ -116,6 +118,6 @@ const styles = StyleSheet.create({
   },
   // Pivot near the bottom of the pad, like a hand waving from the wrist.
   paw: { transformOrigin: '50% 90%' },
-  title: { fontSize: 38, fontFamily: BRAND_FONTS.bold, color: COLORS.primary, textAlign: 'center' },
-  subtitle: { fontSize: 17, fontFamily: BRAND_FONTS.semiBold, color: COLORS.muted, textAlign: 'center', marginTop: 2 },
+  title: { fontSize: 38, fontFamily: BRAND_FONTS.bold, color: c.primary, textAlign: 'center' },
+  subtitle: { fontSize: 17, fontFamily: BRAND_FONTS.semiBold, color: c.muted, textAlign: 'center', marginTop: 2 },
 });

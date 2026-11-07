@@ -1,6 +1,7 @@
 import { AuthButton, AuthField, FormError } from '@/components/auth-form';
 import { useAuth } from '@/context/auth';
-import { COLORS } from '@/constants/colors';
+import { type Palette } from '@/constants/colors';
+import { useColors } from '@/context/theme';
 import { addPost, getPetsForOwner, type Pet } from '@/database/database';
 import { goBackOr } from '@/utils/navigation';
 import { pickPhoto, savePhoto } from '@/utils/pet-photos';
@@ -17,6 +18,8 @@ function leavePostScreen() {
 }
 
 export default function NewPostScreen() {
+  const colors = useColors();
+  const styles = createStyles(colors);
   const db = useSQLiteContext();
   const { owner } = useAuth();
   const [pets, setPets] = useState<Pet[]>([]);
@@ -93,7 +96,7 @@ export default function NewPostScreen() {
           style={styles.backButton}
           hitSlop={8}
         >
-          <Ionicons name="chevron-back" size={22} color={COLORS.text} />
+          <Ionicons name="chevron-back" size={22} color={colors.text} />
         </Pressable>
         <Text style={styles.title} accessibilityRole="header">
           Create a post
@@ -153,7 +156,7 @@ export default function NewPostScreen() {
             onPress={choosePhoto}
             style={styles.addPhoto}
           >
-            <Ionicons name="image-outline" size={22} color={COLORS.primary} />
+            <Ionicons name="image-outline" size={22} color={colors.primary} />
             <Text style={styles.photoLink}>Add a photo</Text>
           </Pressable>
         )}
@@ -171,6 +174,8 @@ type PetChipProps = {
 };
 
 function PetChip({ label, selected, onPress }: PetChipProps) {
+  const colors = useColors();
+  const styles = createStyles(colors);
   return (
     <Pressable
       accessibilityRole="radio"
@@ -183,25 +188,26 @@ function PetChip({ label, selected, onPress }: PetChipProps) {
   );
 }
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.page },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.white, paddingHorizontal: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+const createStyles = (c: Palette) =>
+  StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: c.page },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: c.surface, paddingHorizontal: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: c.border },
   backButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 20, fontWeight: '800', color: COLORS.text },
+  title: { fontSize: 20, fontWeight: '800', color: c.text },
   content: { padding: 20 },
-  label: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginBottom: 6 },
-  hint: { color: COLORS.muted, marginBottom: 16 },
+  label: { fontSize: 14, fontWeight: '600', color: c.text, marginBottom: 6 },
+  hint: { color: c.muted, marginBottom: 16 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
-  chip: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.border },
-  chipSelected: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
-  chipText: { color: COLORS.muted, fontWeight: '600' },
-  chipTextSelected: { color: COLORS.white },
+  chip: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border },
+  chipSelected: { backgroundColor: c.primary, borderColor: c.primary },
+  chipText: { color: c.muted, fontWeight: '600' },
+  chipTextSelected: { color: c.onPrimary },
   captionInput: { minHeight: 120, textAlignVertical: 'top' },
-  counter: { alignSelf: 'flex-end', color: COLORS.muted, fontSize: 12, marginTop: -8, marginBottom: 14 },
-  addPhoto: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.primary, backgroundColor: COLORS.white, marginBottom: 8 },
+  counter: { alignSelf: 'flex-end', color: c.muted, fontSize: 12, marginTop: -8, marginBottom: 14 },
+  addPhoto: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: 52, borderRadius: 16, borderWidth: 2, borderStyle: 'dashed', borderColor: c.primary, backgroundColor: c.surface, marginBottom: 8 },
   photoPreview: { marginBottom: 8 },
-  photo: { width: '100%', aspectRatio: 1, borderRadius: 16, backgroundColor: COLORS.imagePlaceholder },
+  photo: { width: '100%', aspectRatio: 1, borderRadius: 16, backgroundColor: c.imagePlaceholder },
   photoActions: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-  photoLink: { color: COLORS.primary, fontWeight: '700' },
-  photoRemove: { color: COLORS.danger, fontWeight: '700' },
+  photoLink: { color: c.primary, fontWeight: '700' },
+  photoRemove: { color: c.danger, fontWeight: '700' },
 });

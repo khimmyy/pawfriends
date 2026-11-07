@@ -1,6 +1,7 @@
 import { leavePetScreen, PetForm } from '@/components/pet-form';
 import { useAuth } from '@/context/auth';
-import { COLORS } from '@/constants/colors';
+import { type Palette } from '@/constants/colors';
+import { useColors } from '@/context/theme';
 import { getPet, updatePet, type Pet, type PetInput } from '@/database/database';
 import { deletePetPhoto } from '@/utils/pet-photos';
 import { useLocalSearchParams } from 'expo-router';
@@ -9,6 +10,8 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 export default function EditPetScreen() {
+  const colors = useColors();
+  const styles = createStyles(colors);
   const { id } = useLocalSearchParams<{ id: string }>();
   const db = useSQLiteContext();
   const { owner } = useAuth();
@@ -36,7 +39,7 @@ export default function EditPetScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={COLORS.primary} />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -64,8 +67,9 @@ export default function EditPetScreen() {
   return <PetForm title={`Edit ${pet.name}`} submitLabel="Save changes" initial={pet} onSubmit={handleSubmit} />;
 }
 
-const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: COLORS.page },
-  message: { color: COLORS.text, fontSize: 16 },
-  link: { color: COLORS.primary, fontWeight: '700' },
+const createStyles = (c: Palette) =>
+  StyleSheet.create({
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: c.page },
+  message: { color: c.text, fontSize: 16 },
+  link: { color: c.primary, fontWeight: '700' },
 });

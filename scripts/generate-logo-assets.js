@@ -12,11 +12,14 @@ const { PNG } = require('pngjs');
 
 const LOGO = require('../constants/logo-shape.json');
 
-// Keep in step with constants/colors.ts (primary, page and heart).
+// Keep in step with constants/colors.ts (primary, page and heart in both palettes).
 const COLORS = {
   primary: '#7A4FE0',
   light: '#F6F3FF',
   heart: '#FF8A65',
+  // Dark theme (darkColors in constants/colors.ts).
+  primaryDark: '#A78BFA',
+  heartDark: '#FF9A7A',
   white: '#FFFFFF',
   transparent: '#00000000',
 };
@@ -159,6 +162,8 @@ save(
 
 // Splash image: violet paw on a transparent background; app.json sets the lavender color behind it.
 save('splash-icon.png', render({ size: 1024, logoScale: 0.92, layers: [paw(COLORS.primary), heart(COLORS.heart)] }));
+// Dark-mode splash image: the lighter violet paw, shown on the dark background set in app.json.
+save('splash-icon-dark.png', render({ size: 1024, logoScale: 0.92, layers: [paw(COLORS.primaryDark), heart(COLORS.heartDark)] }));
 
 // Browser tab icon: the app icon as a rounded square.
 save(

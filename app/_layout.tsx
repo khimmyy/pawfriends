@@ -1,11 +1,20 @@
 import { AnimatedSplash } from '@/components/animated-splash';
 import { BRAND_FONT_FILES } from '@/constants/fonts';
 import { AuthProvider, useAuth } from '@/context/auth';
+import { ThemeProvider, useTheme } from '@/context/theme';
 import { initializeDatabase } from '@/database/database';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
+// Since SDK 56, the navigation theme API is imported from Expo Router, not from React Navigation itself.
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider as NavigationThemeProvider,
+  type Theme,
+} from 'expo-router/react-navigation';
 import * as SplashScreen from 'expo-splash-screen';
 import { SQLiteProvider } from 'expo-sqlite';
+import { StatusBar } from 'expo-status-bar';
 import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaProvider, initialWindowMetrics } from 'react-native-safe-area-context';
@@ -26,9 +35,11 @@ export default function RootLayout() {
   return (
     <SQLiteProvider databaseName="pawfriends.db" onInit={initializeDatabase}>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <AuthProvider>
-          <RootNavigator />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <RootNavigator />
+          </AuthProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </SQLiteProvider>
   );
@@ -36,39 +47,59 @@ export default function RootLayout() {
 
 function RootNavigator() {
   const { owner, isLoading } = useAuth();
+  const { colors, scheme, ready: themeReady } = useTheme();
   const [splashDone, setSplashDone] = useState(false);
   const finishSplash = useCallback(() => setSplashDone(true), []);
 
   const isSignedIn = owner !== null;
 
+  // React Navigation paints screen backgrounds and transitions; give it the same palette.
+  const baseTheme = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const navigationTheme: Theme = {
+    ...baseTheme,
+    colors: {
+      ...baseTheme.colors,
+      primary: colors.primary,
+      background: colors.page,
+      card: colors.surface,
+      text: colors.text,
+      border: colors.border,
+      notification: colors.heart,
+    },
+  };
+
   return (
-    <View style={styles.root}>
-      {/* Wait for the saved session so a signed-in owner never sees the sign-in screen flash.
-          When a guard turns false, Expo Router sends the user to the anchor route (app/index.tsx),
-          which redirects to the right place for the new sign-in state. */}
-      {isLoading ? null : (
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
+    <NavigationThemeProvider value={navigationTheme}>
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      <View style={[styles.root, { backgroundColor: colors.page }]}>
+        {/* Wait for the saved session so a signed-in owner never sees the sign-in screen flash.
+            When a guard turns false, Expo Router sends the user to the anchor route (app/index.tsx),
+            which redirects to the right place for the new sign-in state. */}
+        {isLoading ? null : (
+          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.page } }}>
+            <Stack.Screen name="index" />
 
-          <Stack.Protected guard={isSignedIn}>
-            <Stack.Screen name="(tabs)" />
-            <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
-            <Stack.Screen name="pets/new" />
-            <Stack.Screen name="pets/[id]" />
-            <Stack.Screen name="posts/new" />
-            <Stack.Screen name="posts/saved" />
-            <Stack.Screen name="posts/[id]" />
-          </Stack.Protected>
+            <Stack.Protected guard={isSignedIn}>
+              <Stack.Screen name="(tabs)" />
+              <Stack.Screen name="modal" options={{ presentation: 'modal' }} />
+              <Stack.Screen name="pets/new" />
+              <Stack.Screen name="pets/[id]" />
+              <Stack.Screen name="posts/new" />
+              <Stack.Screen name="posts/saved" />
+              <Stack.Screen name="posts/[id]" />
+            </Stack.Protected>
 
-          <Stack.Protected guard={!isSignedIn}>
-            <Stack.Screen name="login" />
-            <Stack.Screen name="register" />
-          </Stack.Protected>
-        </Stack>
-      )}
+            <Stack.Protected guard={!isSignedIn}>
+              <Stack.Screen name="login" />
+              <Stack.Screen name="register" />
+            </Stack.Protected>
+          </Stack>
+        )}
 
-      {splashDone ? null : <AnimatedSplash ready={!isLoading} onFinish={finishSplash} />}
-    </View>
+        {/* Waits for the saved appearance too, so the first screen appears in the right theme. */}
+        {splashDone ? null : <AnimatedSplash ready={!isLoading && themeReady} onFinish={finishSplash} />}
+      </View>
+    </NavigationThemeProvider>
   );
 }
 

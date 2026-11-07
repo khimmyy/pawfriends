@@ -1,7 +1,10 @@
-import { COLORS } from "@/constants/colors";
+import { type Palette } from '@/constants/colors';
+import { useColors } from '@/context/theme';
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function AdoptScreen() {
+  const colors = useColors();
+  const styles = createStyles(colors);
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Find Your Companion</Text>
@@ -60,12 +63,13 @@ export default function AdoptScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.page, padding: 16 },
-  title: { fontSize: 24, fontWeight: "bold", color: COLORS.text, marginTop: 20 },
-  subtitle: { fontSize: 14, color: COLORS.muted, marginTop: 4 },
+const createStyles = (c: Palette) =>
+  StyleSheet.create({
+  container: { flex: 1, backgroundColor: c.page, padding: 16 },
+  title: { fontSize: 24, fontWeight: "bold", color: c.text, marginTop: 20 },
+  subtitle: { fontSize: 14, color: c.muted, marginTop: 4 },
   search: {
-    backgroundColor: COLORS.white,
+    backgroundColor: c.surface,
     borderRadius: 18,
     padding: 14,
     marginTop: 18,
@@ -76,23 +80,23 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 18,
     borderRadius: 20,
-    backgroundColor: COLORS.white,
-    color: COLORS.muted,
+    backgroundColor: c.surface,
+    color: c.muted,
     fontWeight: "600",
   },
-  activeCategory: { backgroundColor: COLORS.primary, color: COLORS.white },
+  activeCategory: { backgroundColor: c.primary, color: c.onPrimary },
   stats: {
     marginTop: 28,
-    backgroundColor: COLORS.primary,
+    backgroundColor: c.primary,
     borderRadius: 18,
     padding: 18,
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  stat: { color: COLORS.white, fontWeight: "bold", textAlign: "center" },
+  stat: { color: c.onPrimary, fontWeight: "bold", textAlign: "center" },
   sectionTitle: { fontSize: 18, fontWeight: "bold", marginTop: 20 },
   card: {
-    backgroundColor: COLORS.white,
+    backgroundColor: c.surface,
     borderRadius: 18,
     marginTop: 14,
     overflow: "hidden",
@@ -100,13 +104,13 @@ const styles = StyleSheet.create({
   petImage: { width: "100%", height: 220 },
   cardContent: { padding: 16 },
   petName: { fontSize: 20, fontWeight: "bold" },
-  petInfo: { fontSize: 13, color: COLORS.muted },
-  breed: { color: COLORS.muted, marginTop: 4 },
-  location: { color: COLORS.primary, marginTop: 10 },
+  petInfo: { fontSize: 13, color: c.muted },
+  breed: { color: c.muted, marginTop: 4 },
+  location: { color: c.primary, marginTop: 10 },
   tags: { flexDirection: "row", gap: 8, marginTop: 12 },
   tag: {
-    backgroundColor: COLORS.primarySoft,
-    color: COLORS.primary,
+    backgroundColor: c.primarySoft,
+    color: c.primary,
     paddingVertical: 6,
     paddingHorizontal: 10,
     borderRadius: 14,
@@ -115,17 +119,17 @@ const styles = StyleSheet.create({
   buttons: { flexDirection: "row", gap: 10, marginTop: 16 },
   primaryBtn: {
     flex: 1,
-    backgroundColor: COLORS.primary,
+    backgroundColor: c.primary,
     padding: 14,
     borderRadius: 16,
     alignItems: "center",
   },
-  primaryText: { color: COLORS.white, fontWeight: "bold" },
+  primaryText: { color: c.onPrimary, fontWeight: "bold" },
   secondaryBtn: {
-    backgroundColor: COLORS.primarySoft,
+    backgroundColor: c.primarySoft,
     padding: 14,
     borderRadius: 16,
     alignItems: "center",
   },
-  secondaryText: { color: COLORS.text, fontWeight: "bold" },
+  secondaryText: { color: c.text, fontWeight: "bold" },
 });
