@@ -26,7 +26,8 @@ In a `.claude/worktrees/*` checkout, run `npm ci` there first; a junction to the
 
 - `app/_layout.tsx` — `SQLiteProvider` (`pawfriends.db`, `onInit={initializeDatabase}`), `SafeAreaProvider`, `AuthProvider`, and the root `Stack` with `Stack.Protected` guards: `(tabs)` and `modal` need a signed-in owner, `login` and `register` need a signed-out one
 - `app/index.tsx` — anchor route; redirects to `/(tabs)/home` or `/login` depending on the session
-- `app/login.tsx` (sign in) and `app/register.tsx` (create account) share `components/auth-form.tsx`; validation rules are in `constants/validation.ts`
+- `app/login.tsx` and `app/register.tsx` both render `components/auth-flow.tsx` (blue brand header, then a card with a Sign in / Create account switch, icon fields, show-password button); they differ only in the starting mode. Validation rules are in `constants/validation.ts`. `components/auth-form.tsx` keeps the plainer `AuthField` / `AuthButton` / `FormError` used by the pet and post forms
+- Brand font: Fredoka (`@expo-google-fonts/fredoka`), loaded in `app/_layout.tsx` before anything renders. Use `BRAND_FONTS` from `constants/fonts.ts` for the "PawFriends" name and brand titles only, with `fontFamily` and no `fontWeight`
 - `context/auth.tsx` — `AuthProvider` / `useAuth()` exposing `owner`, `isLoading`, `signIn`, `register`, `signOut`; the session is the single-row `session` table, so it survives restarts
 - `app/(tabs)/` — `home`, `adoption`, `veterinary`, `notifications`, `profile`; tabs are declared in `app/(tabs)/_layout.tsx`
 - `app/pets/new.tsx`, `app/pets/[id].tsx` (add and edit a pet, sharing `components/pet-form.tsx`), `app/posts/new.tsx` (create a post), `app/posts/[id].tsx` (a post and its comments) and `app/posts/saved.tsx`; each must also be listed in the signed-in `Stack.Protected` block in `app/_layout.tsx`

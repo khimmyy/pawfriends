@@ -1,4 +1,5 @@
 import { PawLogo } from '@/components/paw-logo';
+import { BRAND_FONTS } from '@/constants/fonts';
 import { COLORS } from '@/data/pets';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
@@ -115,6 +116,6 @@ const styles = StyleSheet.create({
   },
   // Pivot near the bottom of the pad, like a hand waving from the wrist.
   paw: { transformOrigin: '50% 90%' },
-  title: { fontSize: 32, fontWeight: '800', color: '#06123B', textAlign: 'center' },
-  subtitle: { fontSize: 16, color: COLORS.muted, textAlign: 'center', marginTop: 6 },
+  title: { fontSize: 38, fontFamily: BRAND_FONTS.bold, color: COLORS.blue, textAlign: 'center' },
+  subtitle: { fontSize: 17, fontFamily: BRAND_FONTS.semiBold, color: COLORS.muted, textAlign: 'center', marginTop: 2 },
 });

@@ -1,5 +1,6 @@
 import { NoticeBanner } from '@/components/notice-banner';
 import { PawLogo } from '@/components/paw-logo';
+import { BRAND_FONTS } from '@/constants/fonts';
 import { PostCard } from '@/components/PostCard';
 import { useAuth } from '@/context/auth';
 import { COLORS, STORIES } from '@/data/pets';
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: COLORS.bg },
   header: { backgroundColor: COLORS.white, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: 'rgba(13,27,62,0.08)' },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { fontSize: 25, fontWeight: '800', color: COLORS.blue },
+  title: { fontSize: 28, fontFamily: BRAND_FONTS.bold, color: COLORS.blue },
   headerActions: { flexDirection: 'row', gap: 8 },
   circleButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: COLORS.bg, alignItems: 'center', justifyContent: 'center' },
   circleButtonActive: { backgroundColor: COLORS.blue },

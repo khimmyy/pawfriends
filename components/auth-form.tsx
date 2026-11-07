@@ -1,22 +1,8 @@
-import { PawLogo } from '@/components/paw-logo';
-import type { PropsWithChildren } from 'react';
-import {
-  ActivityIndicator,
-  Keyboard,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-  type TextInputProps,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
+
+// Form pieces shared by the pet and post forms. The sign-in screen has its own, in auth-flow.tsx.
 
 const COLORS = {
-  bg: '#FFF8F0',
   title: '#06123B',
   muted: '#6B7280',
   border: '#E5E7EB',
@@ -25,38 +11,6 @@ const COLORS = {
   errorBg: '#FEF2F2',
   white: '#FFFFFF',
 };
-
-type AuthScreenProps = PropsWithChildren<{
-  title: string;
-  subtitle: string;
-}>;
-
-/** Shared page shell for the sign-in and registration screens. */
-export function AuthScreen({ title, subtitle, children }: AuthScreenProps) {
-  return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.flex}
-      >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-          onScrollBeginDrag={Keyboard.dismiss}
-        >
-          <View style={styles.logo}>
-            <PawLogo size={84} />
-          </View>
-          <Text style={styles.title} accessibilityRole="header">
-            {title}
-          </Text>
-          <Text style={styles.subtitle}>{subtitle}</Text>
-          {children}
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
-}
 
 type AuthFieldProps = TextInputProps & {
   label: string;
@@ -78,7 +32,7 @@ export function AuthField({ label, error, style, ...inputProps }: AuthFieldProps
   );
 }
 
-/** A message for the whole form, such as a wrong password. */
+/** A message for the whole form, such as a failed save. */
 export function FormError({ message }: { message: string | null }) {
   if (!message) {
     return null;
@@ -106,50 +60,12 @@ export function AuthButton({ label, onPress, loading = false }: AuthButtonProps)
       onPress={onPress}
       style={({ pressed }) => [styles.button, (pressed || loading) && styles.buttonPressed]}
     >
-      {loading ? (
-        <ActivityIndicator color={COLORS.white} />
-      ) : (
-        <Text style={styles.buttonText}>{label}</Text>
-      )}
-    </Pressable>
-  );
-}
-
-type AuthSwitchLinkProps = {
-  prompt: string;
-  action: string;
-  onPress: () => void;
-};
-
-export function AuthSwitchLink({ prompt, action, onPress }: AuthSwitchLinkProps) {
-  return (
-    <Pressable
-      accessibilityRole="link"
-      accessibilityLabel={`${prompt} ${action}`}
-      onPress={onPress}
-      style={styles.switchLink}
-      hitSlop={8}
-    >
-      <Text style={styles.switchText}>
-        {prompt} <Text style={styles.switchAction}>{action}</Text>
-      </Text>
+      {loading ? <ActivityIndicator color={COLORS.white} /> : <Text style={styles.buttonText}>{label}</Text>}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  flex: { flex: 1 },
-  content: { flexGrow: 1, justifyContent: 'center', padding: 24 },
-  logo: { alignItems: 'center' },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 10,
-    color: COLORS.title,
-  },
-  subtitle: { fontSize: 16, textAlign: 'center', color: COLORS.muted, marginBottom: 30 },
   field: { marginBottom: 14 },
   label: { fontSize: 14, fontWeight: '600', color: COLORS.title, marginBottom: 6 },
   input: {
@@ -181,7 +97,4 @@ const styles = StyleSheet.create({
   },
   buttonPressed: { opacity: 0.8 },
   buttonText: { color: COLORS.white, fontWeight: 'bold', fontSize: 16 },
-  switchLink: { marginTop: 20, alignSelf: 'center', paddingVertical: 8 },
-  switchText: { textAlign: 'center', color: COLORS.muted },
-  switchAction: { color: COLORS.primary, fontWeight: '600' },
 });

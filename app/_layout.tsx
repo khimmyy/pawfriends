@@ -1,6 +1,8 @@
 import { AnimatedSplash } from '@/components/animated-splash';
+import { BRAND_FONT_FILES } from '@/constants/fonts';
 import { AuthProvider, useAuth } from '@/context/auth';
 import { initializeDatabase } from '@/database/database';
+import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { SQLiteProvider } from 'expo-sqlite';
@@ -14,6 +16,13 @@ SplashScreen.preventAutoHideAsync().catch(() => {
 });
 
 export default function RootLayout() {
+  // Load the brand font while the native splash is still up, so text never appears in the wrong font.
+  // If it fails to load, carry on with the system font rather than blocking the app.
+  const [fontsLoaded, fontError] = useFonts(BRAND_FONT_FILES);
+  if (!fontsLoaded && !fontError) {
+    return null;
+  }
+
   return (
     <SQLiteProvider databaseName="pawfriends.db" onInit={initializeDatabase}>
       <SafeAreaProvider initialMetrics={initialWindowMetrics}>
