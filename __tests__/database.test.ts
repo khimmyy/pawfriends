@@ -1,14 +1,20 @@
 import {
+  addComment,
   addPet,
   addPost,
   clearSession,
+  getComments,
   getFeedPosts,
   getPet,
   getPetsForOwner,
+  getPost,
   getSessionOwner,
   initializeDatabase,
+  MAX_COMMENT_LENGTH,
   registerOwner,
   saveSession,
+  toggleLike,
+  toggleSave,
   updatePet,
   verifyOwner,
   type PetInput,
@@ -26,7 +32,7 @@ jest.mock('expo-crypto', () => {
   };
 });
 
-const LATEST_VERSION = 4;
+const LATEST_VERSION = 5;
 
 async function freshDatabase() {
   const test = createTestDatabase();
@@ -46,7 +52,7 @@ describe('initializeDatabase', () => {
   it('creates every table on a fresh install', async () => {
     const { raw } = await freshDatabase();
 
-    expect(tableNames(raw)).toEqual(expect.arrayContaining(['owners', 'pets', 'posts', 'session']));
+    expect(tableNames(raw)).toEqual(expect.arrayContaining(['comments', 'owners', 'pets', 'post_likes', 'post_saves', 'posts', 'session']));
     expect(userVersion(raw)).toBe(LATEST_VERSION);
   });
 
@@ -72,7 +78,7 @@ describe('initializeDatabase', () => {
 
     await initializeDatabase(db);
 
-    expect(tableNames(raw)).toEqual(expect.arrayContaining(['pets', 'posts']));
+    expect(tableNames(raw)).toEqual(expect.arrayContaining(['comments', 'pets', 'post_likes', 'post_saves', 'posts']));
     expect(userVersion(raw)).toBe(LATEST_VERSION);
   });
 
@@ -223,7 +229,7 @@ describe('posts', () => {
   it('starts with an empty feed', async () => {
     const { db } = await freshDatabase();
 
-    await expect(getFeedPosts(db)).resolves.toEqual([]);
+    await expect(getFeedPosts(db, 1)).resolves.toEqual([]);
   });
 
   it('saves a post about a pet and shows it with the pet and owner names', async () => {
@@ -235,7 +241,7 @@ describe('posts', () => {
       photoUri: 'file:///post-photos/zoomies.jpg',
     });
 
-    const [post] = await getFeedPosts(db);
+    const [post] = await getFeedPosts(db, khim.id);
     expect(post).toMatchObject({
       id: postId,
       ownerId: khim.id,
@@ -255,7 +261,7 @@ describe('posts', () => {
 
     await addPost(db, khim.id, { petId: null, caption: 'Hello PawFriends', photoUri: null });
 
-    await expect(getFeedPosts(db)).resolves.toEqual([
+    await expect(getFeedPosts(db, khim.id)).resolves.toEqual([
       expect.objectContaining({ petId: null, petName: null, petPhotoUri: null, photoUri: null }),
     ]);
   });
@@ -266,7 +272,7 @@ describe('posts', () => {
     await addPost(db, sam.id, { petId: null, caption: 'second', photoUri: null });
     await addPost(db, khim.id, { petId: null, caption: 'third', photoUri: null });
 
-    const captions = (await getFeedPosts(db)).map((post) => post.caption);
+    const captions = (await getFeedPosts(db, khim.id)).map((post) => post.caption);
 
     expect(captions).toEqual(['third', 'second', 'first']);
   });
@@ -277,7 +283,7 @@ describe('posts', () => {
       await addPost(db, khim.id, { petId: null, caption, photoUri: null });
     }
 
-    await expect(getFeedPosts(db, 2)).resolves.toHaveLength(2);
+    await expect(getFeedPosts(db, khim.id, { limit: 2 })).resolves.toHaveLength(2);
   });
 
   it('refuses to tag another owner’s pet', async () => {
@@ -286,7 +292,7 @@ describe('posts', () => {
     await expect(addPost(db, sam.id, { petId: mochiId, caption: 'Not my pet', photoUri: null })).rejects.toThrow(
       'That pet does not belong to this owner.'
     );
-    await expect(getFeedPosts(db)).resolves.toEqual([]);
+    await expect(getFeedPosts(db, sam.id)).resolves.toEqual([]);
   });
 
   it('keeps a post when its pet is deleted', async () => {
@@ -295,7 +301,7 @@ describe('posts', () => {
 
     raw.prepare('DELETE FROM pets WHERE id = ?').run(mochiId);
 
-    await expect(getFeedPosts(db)).resolves.toEqual([
+    await expect(getFeedPosts(db, khim.id)).resolves.toEqual([
       expect.objectContaining({ caption: 'Remember Mochi', petId: null, petName: null }),
     ]);
   });
@@ -307,7 +313,134 @@ describe('posts', () => {
 
     raw.prepare('DELETE FROM owners WHERE id = ?').run(khim.id);
 
-    const captions = (await getFeedPosts(db)).map((post) => post.caption);
+    const captions = (await getFeedPosts(db, sam.id)).map((post) => post.caption);
     expect(captions).toEqual(['from Sam']);
+  });
+});
+
+describe('likes, saves, comments and search', () => {
+  async function databaseWithPosts() {
+    const test = await freshDatabase();
+    const khim = await registerOwner(test.db, { fullName: 'Khim Test', email: 'khim@example.com', password: 'password-1' });
+    const sam = await registerOwner(test.db, { fullName: 'Sam Rivera', email: 'sam@example.com', password: 'password-2' });
+    const mochiId = await addPet(test.db, khim.id, MOCHI);
+    const mochiPost = await addPost(test.db, khim.id, { petId: mochiId, caption: 'Zoomies in the garden', photoUri: null });
+    const samPost = await addPost(test.db, sam.id, { petId: null, caption: 'Rainy day naps', photoUri: null });
+    return { ...test, khim, sam, mochiPost, samPost };
+  }
+
+  it('adds the like, save and comment tables to an existing version 4 install and keeps its posts', async () => {
+    const { db, raw, khim, mochiPost } = await databaseWithPosts();
+    raw.exec('DROP TABLE post_likes; DROP TABLE post_saves; DROP TABLE comments; PRAGMA user_version = 4;');
+
+    await initializeDatabase(db);
+
+    expect(tableNames(raw)).toEqual(expect.arrayContaining(['comments', 'post_likes', 'post_saves']));
+    expect(userVersion(raw)).toBe(LATEST_VERSION);
+    await expect(getPost(db, khim.id, mochiPost)).resolves.toMatchObject({ caption: 'Zoomies in the garden' });
+  });
+
+  it('starts a post with no likes, comments or saves', async () => {
+    const { db, khim, mochiPost } = await databaseWithPosts();
+
+    await expect(getPost(db, khim.id, mochiPost)).resolves.toMatchObject({
+      likeCount: 0,
+      commentCount: 0,
+      likedByMe: false,
+      savedByMe: false,
+    });
+  });
+
+  it('likes and unlikes a post, counting each owner once', async () => {
+    const { db, khim, sam, mochiPost } = await databaseWithPosts();
+
+    await expect(toggleLike(db, khim.id, mochiPost)).resolves.toEqual({ liked: true, likeCount: 1 });
+    await expect(toggleLike(db, sam.id, mochiPost)).resolves.toEqual({ liked: true, likeCount: 2 });
+    await expect(toggleLike(db, khim.id, mochiPost)).resolves.toEqual({ liked: false, likeCount: 1 });
+
+    await expect(getPost(db, khim.id, mochiPost)).resolves.toMatchObject({ likeCount: 1, likedByMe: false });
+    await expect(getPost(db, sam.id, mochiPost)).resolves.toMatchObject({ likeCount: 1, likedByMe: true });
+  });
+
+  it('saves and unsaves a post for one owner only', async () => {
+    const { db, khim, sam, mochiPost, samPost } = await databaseWithPosts();
+
+    await expect(toggleSave(db, khim.id, samPost)).resolves.toBe(true);
+
+    await expect(getPost(db, khim.id, samPost)).resolves.toMatchObject({ savedByMe: true });
+    await expect(getPost(db, sam.id, samPost)).resolves.toMatchObject({ savedByMe: false });
+    expect((await getFeedPosts(db, khim.id, { savedOnly: true })).map((post) => post.id)).toEqual([samPost]);
+    await expect(getFeedPosts(db, sam.id, { savedOnly: true })).resolves.toEqual([]);
+
+    await expect(toggleSave(db, khim.id, samPost)).resolves.toBe(false);
+    await expect(getFeedPosts(db, khim.id, { savedOnly: true })).resolves.toEqual([]);
+    await expect(getPost(db, khim.id, mochiPost)).resolves.toMatchObject({ savedByMe: false });
+  });
+
+  it('adds comments, oldest first, with the commenter’s name', async () => {
+    const { db, khim, sam, mochiPost } = await databaseWithPosts();
+
+    await addComment(db, sam.id, mochiPost, '  So cute!  ');
+    await addComment(db, khim.id, mochiPost, 'Thank you!');
+
+    const comments = await getComments(db, mochiPost);
+    expect(comments.map((comment) => [comment.ownerName, comment.body])).toEqual([
+      ['Sam Rivera', 'So cute!'],
+      ['Khim Test', 'Thank you!'],
+    ]);
+    await expect(getPost(db, khim.id, mochiPost)).resolves.toMatchObject({ commentCount: 2 });
+    await expect(getComments(db, 9999)).resolves.toEqual([]);
+  });
+
+  it('rejects empty and too-long comments', async () => {
+    const { db, khim, mochiPost } = await databaseWithPosts();
+
+    await expect(addComment(db, khim.id, mochiPost, '   ')).rejects.toThrow('A comment cannot be empty.');
+    await expect(addComment(db, khim.id, mochiPost, 'a'.repeat(MAX_COMMENT_LENGTH + 1))).rejects.toThrow(
+      `A comment can be at most ${MAX_COMMENT_LENGTH} characters.`
+    );
+    await expect(addComment(db, khim.id, mochiPost, 'a'.repeat(MAX_COMMENT_LENGTH))).resolves.toEqual(
+      expect.any(Number)
+    );
+  });
+
+  it('removes a post’s likes, saves and comments when its owner is deleted', async () => {
+    const { db, raw, khim, sam, mochiPost } = await databaseWithPosts();
+    await toggleLike(db, sam.id, mochiPost);
+    await toggleSave(db, sam.id, mochiPost);
+    await addComment(db, sam.id, mochiPost, 'Love this');
+
+    raw.prepare('DELETE FROM owners WHERE id = ?').run(khim.id);
+
+    const count = (table: string) => Number(raw.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get()?.count);
+    expect([count('post_likes'), count('post_saves'), count('comments')]).toEqual([0, 0, 0]);
+  });
+
+  it.each([
+    ['a word in the caption', 'zoomies', ['Zoomies in the garden']],
+    ['different letter case', 'RAINY', ['Rainy day naps']],
+    ['a pet name', 'mochi', ['Zoomies in the garden']],
+    ['an owner name', 'rivera', ['Rainy day naps']],
+    ['text that matches nothing', 'parrot', []],
+  ])('searches by %s', async (_label, search, expectedCaptions) => {
+    const { db, khim } = await databaseWithPosts();
+
+    const results = await getFeedPosts(db, khim.id, { search });
+
+    expect(results.map((post) => post.caption)).toEqual(expectedCaptions);
+  });
+
+  it('treats % and _ in a search as plain characters', async () => {
+    const { db, khim } = await databaseWithPosts();
+    await addPost(db, khim.id, { petId: null, caption: '100% good boy', photoUri: null });
+
+    expect((await getFeedPosts(db, khim.id, { search: '0%' })).map((post) => post.caption)).toEqual(['100% good boy']);
+    await expect(getFeedPosts(db, khim.id, { search: '_' })).resolves.toEqual([]);
+  });
+
+  it('ignores a search of only spaces', async () => {
+    const { db, khim } = await databaseWithPosts();
+
+    await expect(getFeedPosts(db, khim.id, { search: '   ' })).resolves.toHaveLength(2);
   });
 });

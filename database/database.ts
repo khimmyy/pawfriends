@@ -1,7 +1,7 @@
 import * as Crypto from 'expo-crypto';
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-const DATABASE_VERSION = 4;
+const DATABASE_VERSION = 5;
 
 export async function initializeDatabase(db: SQLiteDatabase) {
   await db.execAsync(`
@@ -68,6 +68,32 @@ export async function initializeDatabase(db: SQLiteDatabase) {
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
       CREATE INDEX IF NOT EXISTS idx_posts_created ON posts(created_at);
+    `);
+  }
+
+  if (currentVersion < 5) {
+    // One row per owner who liked or saved a post, so each can only like or save it once.
+    await db.execAsync(`
+      CREATE TABLE IF NOT EXISTS post_likes (
+        post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        owner_id INTEGER NOT NULL REFERENCES owners(id) ON DELETE CASCADE,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (post_id, owner_id)
+      );
+      CREATE TABLE IF NOT EXISTS post_saves (
+        post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        owner_id INTEGER NOT NULL REFERENCES owners(id) ON DELETE CASCADE,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        PRIMARY KEY (post_id, owner_id)
+      );
+      CREATE TABLE IF NOT EXISTS comments (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        post_id INTEGER NOT NULL REFERENCES posts(id) ON DELETE CASCADE,
+        owner_id INTEGER NOT NULL REFERENCES owners(id) ON DELETE CASCADE,
+        body TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );
+      CREATE INDEX IF NOT EXISTS idx_comments_post ON comments(post_id, created_at);
     `);
   }
 
@@ -281,7 +307,7 @@ export type PostInput = {
   photoUri: string | null;
 };
 
-/** A post with the names needed to show it in the feed. */
+/** A post with everything needed to show it to one viewer in the feed. */
 export type FeedPost = {
   id: number;
   ownerId: number;
@@ -294,6 +320,12 @@ export type FeedPost = {
   photoUri: string | null;
   /** SQLite CURRENT_TIMESTAMP in UTC, e.g. "2026-11-07 14:05:09". */
   createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  /** Whether the viewer the posts were loaded for has liked this post. */
+  likedByMe: boolean;
+  /** Whether the viewer the posts were loaded for has saved this post. */
+  savedByMe: boolean;
 };
 
 type FeedPostRow = {
@@ -307,6 +339,10 @@ type FeedPostRow = {
   caption: string;
   photo_uri: string | null;
   created_at: string;
+  like_count: number;
+  comment_count: number;
+  liked_by_me: number;
+  saved_by_me: number;
 };
 
 function toFeedPost(row: FeedPostRow): FeedPost {
@@ -321,6 +357,10 @@ function toFeedPost(row: FeedPostRow): FeedPost {
     caption: row.caption,
     photoUri: row.photo_uri,
     createdAt: row.created_at,
+    likeCount: Number(row.like_count),
+    commentCount: Number(row.comment_count),
+    likedByMe: Boolean(row.liked_by_me),
+    savedByMe: Boolean(row.saved_by_me),
   };
 }
 
@@ -341,18 +381,171 @@ export async function addPost(db: SQLiteDatabase, ownerId: number, input: PostIn
   return result.lastInsertRowId;
 }
 
-/** The newest posts on this device, newest first. */
-export async function getFeedPosts(db: SQLiteDatabase, limit = 50): Promise<FeedPost[]> {
+// Shared by the feed, saved posts and single-post queries. The two "?" are the viewer's id.
+const FEED_POST_SELECT = `
+  SELECT posts.id, posts.owner_id, owners.full_name AS owner_name, owners.email AS owner_email,
+         posts.pet_id, pets.name AS pet_name, pets.photo_uri AS pet_photo_uri,
+         posts.caption, posts.photo_uri, posts.created_at,
+         (SELECT COUNT(*) FROM post_likes WHERE post_likes.post_id = posts.id) AS like_count,
+         (SELECT COUNT(*) FROM comments WHERE comments.post_id = posts.id) AS comment_count,
+         EXISTS (SELECT 1 FROM post_likes
+                 WHERE post_likes.post_id = posts.id AND post_likes.owner_id = ?) AS liked_by_me,
+         EXISTS (SELECT 1 FROM post_saves
+                 WHERE post_saves.post_id = posts.id AND post_saves.owner_id = ?) AS saved_by_me
+  FROM posts
+  JOIN owners ON owners.id = posts.owner_id
+  LEFT JOIN pets ON pets.id = posts.pet_id`;
+
+/** Escapes \, % and _ so a search for "50%" matches that text instead of acting as a wildcard. */
+function toLikePattern(search: string) {
+  return `%${search.replace(/[\\%_]/g, (character) => `\\${character}`)}%`;
+}
+
+export type FeedOptions = {
+  /** Only posts whose caption, pet name or owner name contains this text (case-insensitive). */
+  search?: string;
+  /** Only posts the viewer has saved. */
+  savedOnly?: boolean;
+  limit?: number;
+};
+
+/** Posts on this device, newest first, with like, comment and save details for `viewerId`. */
+export async function getFeedPosts(
+  db: SQLiteDatabase,
+  viewerId: number,
+  { search = '', savedOnly = false, limit = 50 }: FeedOptions = {}
+): Promise<FeedPost[]> {
+  const conditions: string[] = [];
+  const params: (string | number)[] = [viewerId, viewerId];
+
+  const trimmedSearch = search.trim();
+  if (trimmedSearch) {
+    conditions.push(
+      "(posts.caption LIKE ? ESCAPE '\\' OR pets.name LIKE ? ESCAPE '\\' OR owners.full_name LIKE ? ESCAPE '\\')"
+    );
+    const pattern = toLikePattern(trimmedSearch);
+    params.push(pattern, pattern, pattern);
+  }
+  if (savedOnly) {
+    conditions.push(
+      'EXISTS (SELECT 1 FROM post_saves WHERE post_saves.post_id = posts.id AND post_saves.owner_id = ?)'
+    );
+    params.push(viewerId);
+  }
+  params.push(limit);
+
+  const where = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
   const rows = await db.getAllAsync<FeedPostRow>(
-    `SELECT posts.id, posts.owner_id, owners.full_name AS owner_name, owners.email AS owner_email,
-            posts.pet_id, pets.name AS pet_name, pets.photo_uri AS pet_photo_uri,
-            posts.caption, posts.photo_uri, posts.created_at
-     FROM posts
-     JOIN owners ON owners.id = posts.owner_id
-     LEFT JOIN pets ON pets.id = posts.pet_id
+    `${FEED_POST_SELECT}
+     ${where}
      ORDER BY posts.created_at DESC, posts.id DESC
      LIMIT ?`,
-    limit
+    params
   );
   return rows.map(toFeedPost);
+}
+
+/** One post with like, comment and save details for `viewerId`, or null if it does not exist. */
+export async function getPost(db: SQLiteDatabase, viewerId: number, postId: number): Promise<FeedPost | null> {
+  const row = await db.getFirstAsync<FeedPostRow>(
+    `${FEED_POST_SELECT}
+     WHERE posts.id = ?`,
+    viewerId,
+    viewerId,
+    postId
+  );
+  return row ? toFeedPost(row) : null;
+}
+
+/** Likes the post, or removes the like if the owner already liked it. */
+export async function toggleLike(
+  db: SQLiteDatabase,
+  ownerId: number,
+  postId: number
+): Promise<{ liked: boolean; likeCount: number }> {
+  const removed = await db.runAsync('DELETE FROM post_likes WHERE post_id = ? AND owner_id = ?', postId, ownerId);
+  const liked = removed.changes === 0;
+  if (liked) {
+    await db.runAsync('INSERT INTO post_likes (post_id, owner_id) VALUES (?, ?)', postId, ownerId);
+  }
+  const row = await db.getFirstAsync<{ count: number }>(
+    'SELECT COUNT(*) AS count FROM post_likes WHERE post_id = ?',
+    postId
+  );
+  return { liked, likeCount: Number(row?.count ?? 0) };
+}
+
+/** Saves the post for later, or unsaves it if the owner already saved it. Returns the new state. */
+export async function toggleSave(db: SQLiteDatabase, ownerId: number, postId: number): Promise<boolean> {
+  const removed = await db.runAsync('DELETE FROM post_saves WHERE post_id = ? AND owner_id = ?', postId, ownerId);
+  if (removed.changes > 0) {
+    return false;
+  }
+  await db.runAsync('INSERT INTO post_saves (post_id, owner_id) VALUES (?, ?)', postId, ownerId);
+  return true;
+}
+
+export const MAX_COMMENT_LENGTH = 300;
+
+export type Comment = {
+  id: number;
+  postId: number;
+  ownerId: number;
+  ownerName: string;
+  body: string;
+  createdAt: string;
+};
+
+type CommentRow = {
+  id: number;
+  post_id: number;
+  owner_id: number;
+  owner_name: string;
+  body: string;
+  created_at: string;
+};
+
+/** Adds a comment and returns its id. Throws if the comment is empty or too long. */
+export async function addComment(
+  db: SQLiteDatabase,
+  ownerId: number,
+  postId: number,
+  body: string
+): Promise<number> {
+  const trimmed = body.trim();
+  if (!trimmed) {
+    throw new Error('A comment cannot be empty.');
+  }
+  if (trimmed.length > MAX_COMMENT_LENGTH) {
+    throw new Error(`A comment can be at most ${MAX_COMMENT_LENGTH} characters.`);
+  }
+
+  const result = await db.runAsync(
+    'INSERT INTO comments (post_id, owner_id, body) VALUES (?, ?, ?)',
+    postId,
+    ownerId,
+    trimmed
+  );
+  return result.lastInsertRowId;
+}
+
+/** A post's comments, oldest first. */
+export async function getComments(db: SQLiteDatabase, postId: number): Promise<Comment[]> {
+  const rows = await db.getAllAsync<CommentRow>(
+    `SELECT comments.id, comments.post_id, comments.owner_id, owners.full_name AS owner_name,
+            comments.body, comments.created_at
+     FROM comments
+     JOIN owners ON owners.id = comments.owner_id
+     WHERE comments.post_id = ?
+     ORDER BY comments.created_at, comments.id`,
+    postId
+  );
+  return rows.map((row) => ({
+    id: row.id,
+    postId: row.post_id,
+    ownerId: row.owner_id,
+    ownerName: row.owner_name,
+    body: row.body,
+    createdAt: row.created_at,
+  }));
 }

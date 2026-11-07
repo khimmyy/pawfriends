@@ -38,6 +38,8 @@ function RootNavigator() {
           <Stack.Screen name="pets/new" />
           <Stack.Screen name="pets/[id]" />
           <Stack.Screen name="posts/new" />
+          <Stack.Screen name="posts/saved" />
+          <Stack.Screen name="posts/[id]" />
       </Stack.Protected>
 
       <Stack.Protected guard={!isSignedIn}>
