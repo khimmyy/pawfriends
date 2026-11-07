@@ -13,7 +13,7 @@ Cross-platform pet community prototype (Expo SDK 57, React Native 0.86, React 19
 
 There are no automated tests yet. Lint and type check are the required checks; say which platforms you actually ran.
 
-Known issue: `npm run web` currently fails with `Worker chunk not found for: ...expo-sqlite/web/worker.ts` (Metro serializer, seen on Windows with Expo 57.0.30). Test on Android/iOS until it is fixed.
+Keep `web.output` in `app.json` as `"single"`. With `"static"`, the dev server pre-renders pages with a serializer that cannot handle the expo-sqlite web worker and fails with `Worker chunk not found for: ...expo-sqlite/web/worker.ts`. Do not work around it with `EXPO_NO_METRO_LAZY`: the page then loads but the worker fails with "Bundle splitting is required for Web Worker imports".
 
 In a `.claude/worktrees/*` checkout, run `npm ci` there first; a junction to the main `node_modules` breaks Metro.
 
