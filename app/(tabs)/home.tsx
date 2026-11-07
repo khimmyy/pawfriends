@@ -3,7 +3,8 @@ import { PawLogo } from '@/components/paw-logo';
 import { BRAND_FONTS } from '@/constants/fonts';
 import { PostCard } from '@/components/PostCard';
 import { useAuth } from '@/context/auth';
-import { COLORS, STORIES } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
+import { STORIES } from '@/data/pets';
 import { getFeedPosts, type FeedPost } from '@/database/database';
 import { usePostActions } from '@/hooks/use-post-actions';
 import { Ionicons } from '@expo/vector-icons';
@@ -71,7 +72,7 @@ export default function FeedScreen() {
             onPress={toggleSearch}
             style={[styles.circleButton, searchOpen && styles.circleButtonActive]}
           >
-            <Ionicons name={searchOpen ? 'close' : 'search'} size={18} color={searchOpen ? COLORS.white : COLORS.dark} />
+            <Ionicons name={searchOpen ? 'close' : 'search'} size={18} color={searchOpen ? COLORS.white : COLORS.text} />
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -79,7 +80,7 @@ export default function FeedScreen() {
             onPress={openNewPost}
             style={styles.circleButton}
           >
-            <Ionicons name="add-circle-outline" size={20} color={COLORS.dark} />
+            <Ionicons name="add-circle-outline" size={20} color={COLORS.text} />
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -87,7 +88,7 @@ export default function FeedScreen() {
             onPress={openSavedPosts}
             style={styles.circleButton}
           >
-            <Ionicons name="bookmark-outline" size={18} color={COLORS.dark} />
+            <Ionicons name="bookmark-outline" size={18} color={COLORS.text} />
           </Pressable>
         </View>
       </View>
@@ -178,28 +179,28 @@ export default function FeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  header: { backgroundColor: COLORS.white, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: 'rgba(13,27,62,0.08)' },
+  safeArea: { flex: 1, backgroundColor: COLORS.page },
+  header: { backgroundColor: COLORS.white, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: COLORS.border },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { fontSize: 28, fontFamily: BRAND_FONTS.bold, color: COLORS.blue },
+  title: { fontSize: 28, fontFamily: BRAND_FONTS.bold, color: COLORS.text },
   headerActions: { flexDirection: 'row', gap: 8 },
-  circleButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: COLORS.bg, alignItems: 'center', justifyContent: 'center' },
-  circleButtonActive: { backgroundColor: COLORS.blue },
-  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.white, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(13,27,62,0.08)' },
-  searchInput: { flex: 1, backgroundColor: COLORS.bg, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: COLORS.dark },
+  circleButton: { width: 38, height: 38, borderRadius: 19, backgroundColor: COLORS.page, alignItems: 'center', justifyContent: 'center' },
+  circleButtonActive: { backgroundColor: COLORS.primary },
+  searchBar: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.white, paddingHorizontal: 16, paddingBottom: 12, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  searchInput: { flex: 1, backgroundColor: COLORS.page, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: COLORS.text },
   resultCount: { color: COLORS.muted, fontSize: 13, paddingHorizontal: 16, paddingVertical: 10 },
   storiesCard: { backgroundColor: COLORS.white, paddingVertical: 12, marginBottom: 8 },
   storiesList: { paddingHorizontal: 16, gap: 14 },
   storyItem: { alignItems: 'center', width: 62 },
-  addStory: { width: 56, height: 56, borderRadius: 28, borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.blue, backgroundColor: COLORS.bg, alignItems: 'center', justifyContent: 'center' },
-  plus: { fontSize: 28, color: COLORS.blue, fontWeight: '700' },
-  storyAvatar: { width: 56, height: 56, borderRadius: 28, borderWidth: 3, borderColor: COLORS.blue },
+  addStory: { width: 56, height: 56, borderRadius: 28, borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.primary, backgroundColor: COLORS.page, alignItems: 'center', justifyContent: 'center' },
+  plus: { fontSize: 28, color: COLORS.primary, fontWeight: '700' },
+  storyAvatar: { width: 56, height: 56, borderRadius: 28, borderWidth: 3, borderColor: COLORS.primary },
   storyName: { marginTop: 5, fontSize: 11, color: COLORS.muted, fontWeight: '500', textAlign: 'center' },
   promptCard: { backgroundColor: COLORS.white, marginBottom: 8, paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'center', gap: 12 },
   promptAvatar: { width: 42, height: 42, borderRadius: 21 },
-  promptButton: { flex: 1, backgroundColor: COLORS.bg, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 11 },
+  promptButton: { flex: 1, backgroundColor: COLORS.page, borderRadius: 22, paddingHorizontal: 16, paddingVertical: 11 },
   promptText: { color: COLORS.muted, fontSize: 14 },
   empty: { alignItems: 'center', paddingHorizontal: 32, paddingVertical: 40, gap: 6 },
-  emptyTitle: { color: COLORS.dark, fontSize: 16, fontWeight: '700', marginTop: 6 },
+  emptyTitle: { color: COLORS.text, fontSize: 16, fontWeight: '700', marginTop: 6 },
   emptyText: { color: COLORS.muted, textAlign: 'center' },
 });

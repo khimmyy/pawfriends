@@ -1,4 +1,4 @@
-import { COLORS } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
 import { StyleSheet, Text, View } from 'react-native';
 
 /** A short message pinned to the bottom of a screen, such as "Saved" or "Copied". */
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     left: 16,
     right: 16,
     bottom: 16,
-    backgroundColor: COLORS.dark,
+    backgroundColor: COLORS.text,
     borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 16,

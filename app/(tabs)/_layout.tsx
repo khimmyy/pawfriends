@@ -1,16 +1,15 @@
 import { Ionicons } from '@expo/vector-icons';
+import { COLORS } from '@/constants/colors';
 import { Tabs } from 'expo-router';
 
-const BLUE = '#1A56DB';
-const MUTED = '#9BB3D8';
 
 export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: BLUE,
-        tabBarInactiveTintColor: MUTED,
+        tabBarActiveTintColor: COLORS.primary,
+        tabBarInactiveTintColor: COLORS.muted,
         tabBarStyle: { height: 64, paddingBottom: 8, paddingTop: 6 },
         tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
       }}
@@ -41,6 +40,7 @@ export default function TabLayout() {
         options={{
           title: 'Activity',
           tabBarBadge: 4,
+          tabBarBadgeStyle: { backgroundColor: COLORS.heart, color: COLORS.white },
           tabBarIcon: ({ color, size }) => <Ionicons name="notifications" size={size} color={color} />,
         }}
       />

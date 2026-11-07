@@ -1,6 +1,6 @@
 import { leavePetScreen, PetForm } from '@/components/pet-form';
 import { useAuth } from '@/context/auth';
-import { COLORS } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
 import { getPet, updatePet, type Pet, type PetInput } from '@/database/database';
 import { deletePetPhoto } from '@/utils/pet-photos';
 import { useLocalSearchParams } from 'expo-router';
@@ -36,7 +36,7 @@ export default function EditPetScreen() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator color={COLORS.blue} />
+        <ActivityIndicator color={COLORS.primary} />
       </View>
     );
   }
@@ -65,7 +65,7 @@ export default function EditPetScreen() {
 }
 
 const styles = StyleSheet.create({
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: COLORS.bg },
-  message: { color: COLORS.dark, fontSize: 16 },
-  link: { color: COLORS.blue, fontWeight: '700' },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, backgroundColor: COLORS.page },
+  message: { color: COLORS.text, fontSize: 16 },
+  link: { color: COLORS.primary, fontWeight: '700' },
 });

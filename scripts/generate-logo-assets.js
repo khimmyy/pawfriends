@@ -12,10 +12,11 @@ const { PNG } = require('pngjs');
 
 const LOGO = require('../constants/logo-shape.json');
 
+// Keep in step with constants/colors.ts (primary, page and heart).
 const COLORS = {
-  blue: '#1A56DB',
-  cream: '#FFF8F0',
-  yellow: '#F5C800',
+  primary: '#7A4FE0',
+  light: '#F6F3FF',
+  heart: '#FF8A65',
   white: '#FFFFFF',
   transparent: '#00000000',
 };
@@ -142,22 +143,22 @@ function save(fileName, png, { opaque = false } = {}) {
 const paw = (color) => ({ color, inside: insidePaw });
 const heart = (color) => ({ color, inside: insideHeart });
 
-// App icon (iOS needs it opaque): cream paw on brand blue.
-save('icon.png', render({ size: 1024, logoScale: 0.66, background: COLORS.blue, layers: [paw(COLORS.cream), heart(COLORS.yellow)] }), {
+// App icon (iOS needs it opaque): light paw on brand violet.
+save('icon.png', render({ size: 1024, logoScale: 0.66, background: COLORS.primary, layers: [paw(COLORS.light), heart(COLORS.heart)] }), {
   opaque: true,
 });
 
-// Android adaptive icon: blue background layer, paw foreground kept inside the central safe zone.
-save('android-icon-background.png', render({ size: 512, logoScale: 1, background: COLORS.blue, layers: [] }));
-save('android-icon-foreground.png', render({ size: 512, logoScale: 0.5, layers: [paw(COLORS.cream), heart(COLORS.yellow)] }));
+// Android adaptive icon: violet background layer, paw foreground kept inside the central safe zone.
+save('android-icon-background.png', render({ size: 512, logoScale: 1, background: COLORS.primary, layers: [] }));
+save('android-icon-foreground.png', render({ size: 512, logoScale: 0.5, layers: [paw(COLORS.light), heart(COLORS.heart)] }));
 // Monochrome (themed) icon: only the shape is used, so the heart is cut out to stay visible.
 save(
   'android-icon-monochrome.png',
   render({ size: 432, logoScale: 0.5, layers: [paw(COLORS.white), { ...heart(COLORS.white), erase: true }] })
 );
 
-// Splash image: blue paw on the transparent background; app.json sets the cream color behind it.
-save('splash-icon.png', render({ size: 1024, logoScale: 0.92, layers: [paw(COLORS.blue), heart(COLORS.yellow)] }));
+// Splash image: violet paw on a transparent background; app.json sets the lavender color behind it.
+save('splash-icon.png', render({ size: 1024, logoScale: 0.92, layers: [paw(COLORS.primary), heart(COLORS.heart)] }));
 
 // Browser tab icon: the app icon as a rounded square.
 save(
@@ -166,22 +167,22 @@ save(
     size: 48,
     logoScale: 0.74,
     layers: [
-      { color: COLORS.blue, pixel: true, inside: (x, y) => insideRoundedSquare(x, y, 48, 11) },
-      paw(COLORS.cream),
-      heart(COLORS.yellow),
+      { color: COLORS.primary, pixel: true, inside: (x, y) => insideRoundedSquare(x, y, 48, 11) },
+      paw(COLORS.light),
+      heart(COLORS.heart),
     ],
   })
 );
 
 // Vector copy of the logo for anything else (web, documents, print).
 const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${LOGO.viewBox} ${LOGO.viewBox}" role="img" aria-label="PawFriends logo">
-  <g fill="${COLORS.blue}">
+  <g fill="${COLORS.primary}">
 ${LOGO.toes
   .map((toe) => `    <ellipse cx="${toe.cx}" cy="${toe.cy}" rx="${toe.rx}" ry="${toe.ry}" transform="rotate(${toe.rotate} ${toe.cx} ${toe.cy})"/>`)
   .join('\n')}
     <ellipse cx="${LOGO.pad.cx}" cy="${LOGO.pad.cy}" rx="${LOGO.pad.rx}" ry="${LOGO.pad.ry}"/>
   </g>
-  <g fill="${COLORS.yellow}">
+  <g fill="${COLORS.heart}">
 ${LOGO.heart.circles.map(({ cx, cy, r }) => `    <circle cx="${cx}" cy="${cy}" r="${r}"/>`).join('\n')}
     <polygon points="${LOGO.heart.points.map(([x, y]) => `${x},${y}`).join(' ')}"/>
   </g>

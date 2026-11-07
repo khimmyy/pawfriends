@@ -1,5 +1,5 @@
 import LOGO from '@/constants/logo-shape.json';
-import { COLORS } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
 import { View } from 'react-native';
 import Svg, { Circle, Ellipse, G, Polygon } from 'react-native-svg';
 
@@ -23,8 +23,8 @@ const HEART_POINTS = LOGO.heart.points.map(([x, y]) => `${x},${y}`).join(' ');
  */
 export function PawLogo({
   size = 48,
-  color = COLORS.blue,
-  heartColor = COLORS.yellow,
+  color = COLORS.primary,
+  heartColor = COLORS.heart,
   accessibilityLabel = 'PawFriends logo',
 }: PawLogoProps) {
   // Accessibility props go on a wrapping View: on the web, react-native-svg would pass them

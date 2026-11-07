@@ -2,7 +2,7 @@ import { NoticeBanner } from '@/components/notice-banner';
 import { PostCard } from '@/components/PostCard';
 import { ScreenHeader } from '@/components/screen-header';
 import { useAuth } from '@/context/auth';
-import { COLORS } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
 import {
   addComment,
   getComments,
@@ -104,7 +104,7 @@ export default function PostDetailScreen() {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator color={COLORS.blue} />
+          <ActivityIndicator color={COLORS.primary} />
         </View>
       ) : !post ? (
         <View style={styles.center}>
@@ -179,22 +179,22 @@ export default function PostDetailScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
+  safeArea: { flex: 1, backgroundColor: COLORS.page },
   flex: { flex: 1 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  message: { color: COLORS.dark, fontSize: 16 },
-  sectionTitle: { color: COLORS.dark, fontSize: 16, fontWeight: '800', marginHorizontal: 16, marginTop: 8, marginBottom: 10 },
+  message: { color: COLORS.text, fontSize: 16 },
+  sectionTitle: { color: COLORS.text, fontSize: 16, fontWeight: '800', marginHorizontal: 16, marginTop: 8, marginBottom: 10 },
   emptyText: { color: COLORS.muted, marginHorizontal: 16, marginBottom: 16 },
   comment: { flexDirection: 'row', gap: 10, marginHorizontal: 16, marginBottom: 12 },
-  commentAvatar: { width: 34, height: 34, borderRadius: 17, backgroundColor: COLORS.blue, alignItems: 'center', justifyContent: 'center' },
+  commentAvatar: { width: 34, height: 34, borderRadius: 17, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
   commentInitial: { color: COLORS.white, fontWeight: '800' },
   commentBubble: { flex: 1, backgroundColor: COLORS.white, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 8 },
-  commentAuthor: { color: COLORS.dark, fontWeight: '700', fontSize: 13 },
+  commentAuthor: { color: COLORS.text, fontWeight: '700', fontSize: 13 },
   commentTime: { color: COLORS.muted, fontWeight: '400' },
-  commentBody: { color: COLORS.dark, marginTop: 2, lineHeight: 20 },
-  sendError: { color: '#B91C1C', textAlign: 'center', paddingHorizontal: 16, paddingBottom: 6 },
-  composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, backgroundColor: COLORS.white, paddingHorizontal: 12, paddingVertical: 10, borderTopWidth: 1, borderTopColor: 'rgba(13,27,62,0.08)' },
-  input: { flex: 1, maxHeight: 120, backgroundColor: COLORS.bg, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: COLORS.dark },
-  sendButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.blue, alignItems: 'center', justifyContent: 'center' },
+  commentBody: { color: COLORS.text, marginTop: 2, lineHeight: 20 },
+  sendError: { color: COLORS.danger, textAlign: 'center', paddingHorizontal: 16, paddingBottom: 6 },
+  composer: { flexDirection: 'row', alignItems: 'flex-end', gap: 8, backgroundColor: COLORS.white, paddingHorizontal: 12, paddingVertical: 10, borderTopWidth: 1, borderTopColor: COLORS.border },
+  input: { flex: 1, maxHeight: 120, backgroundColor: COLORS.page, borderRadius: 18, paddingHorizontal: 14, paddingVertical: 10, fontSize: 14, color: COLORS.text },
+  sendButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
   sendButtonDisabled: { opacity: 0.4 },
 });

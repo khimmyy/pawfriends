@@ -7,7 +7,8 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS, POSTS } from '../../data/pets';
+import { COLORS } from '@/constants/colors';
+import { POSTS } from '@/data/pets';
 
 export default function ProfileScreen() {
   const { owner, signOut } = useAuth();
@@ -129,10 +130,10 @@ export default function ProfileScreen() {
             style={({ pressed }) => [styles.signOutButton, pressed && styles.signOutPressed]}
           >
             {signingOut ? (
-              <ActivityIndicator color={COLORS.blue} />
+              <ActivityIndicator color={COLORS.primary} />
             ) : (
               <>
-                <Ionicons name="log-out-outline" size={18} color={COLORS.blue} />
+                <Ionicons name="log-out-outline" size={18} color={COLORS.primary} />
                 <Text style={styles.signOutText}>Sign out</Text>
               </>
             )}
@@ -153,35 +154,35 @@ function Stat({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  cover: { height: 120, backgroundColor: COLORS.blue },
+  safeArea: { flex: 1, backgroundColor: COLORS.page },
+  cover: { height: 120, backgroundColor: COLORS.primary },
   profileCard: { backgroundColor: COLORS.white, alignItems: 'center', padding: 18, marginBottom: 12 },
   avatar: { width: 96, height: 96, borderRadius: 48, borderWidth: 4, borderColor: COLORS.white, marginTop: -66 },
-  name: { fontSize: 26, color: COLORS.dark, fontWeight: '800', marginTop: 8 },
+  name: { fontSize: 26, color: COLORS.text, fontWeight: '800', marginTop: 8 },
   username: { color: COLORS.muted, marginTop: 2 },
-  bio: { color: COLORS.dark, textAlign: 'center', marginTop: 10, lineHeight: 20 },
+  bio: { color: COLORS.text, textAlign: 'center', marginTop: 10, lineHeight: 20 },
   stats: { flexDirection: 'row', marginTop: 18, width: '100%', justifyContent: 'space-around' },
   statItem: { alignItems: 'center' },
-  statValue: { fontWeight: '800', fontSize: 18, color: COLORS.blue },
+  statValue: { fontWeight: '800', fontSize: 18, color: COLORS.primary },
   statLabel: { color: COLORS.muted, fontSize: 12, marginTop: 3 },
-  sectionTitle: { marginHorizontal: 16, marginBottom: 10, color: COLORS.dark, fontSize: 18, fontWeight: '800' },
+  sectionTitle: { marginHorizontal: 16, marginBottom: 10, color: COLORS.text, fontSize: 18, fontWeight: '800' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 12, gap: 6 },
-  gridImage: { width: '31.8%', aspectRatio: 1, borderRadius: 12, backgroundColor: '#D8E4F7' },
+  gridImage: { width: '31.8%', aspectRatio: 1, borderRadius: 12, backgroundColor: COLORS.imagePlaceholder },
   accountCard: { backgroundColor: COLORS.white, marginHorizontal: 16, marginBottom: 24, borderRadius: 16, padding: 16, flexDirection: 'row', alignItems: 'center', gap: 12 },
   accountInfo: { flex: 1 },
-  accountName: { color: COLORS.dark, fontWeight: '700', fontSize: 15 },
+  accountName: { color: COLORS.text, fontWeight: '700', fontSize: 15 },
   accountEmail: { color: COLORS.muted, fontSize: 13, marginTop: 2 },
-  signOutButton: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, minWidth: 110, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 14, backgroundColor: COLORS.bg },
+  signOutButton: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: 44, minWidth: 110, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 14, backgroundColor: COLORS.page },
   signOutPressed: { opacity: 0.7 },
-  signOutText: { color: COLORS.blue, fontWeight: '700' },
-  avatarPlaceholder: { backgroundColor: COLORS.bg, alignItems: 'center', justifyContent: 'center' },
+  signOutText: { color: COLORS.primary, fontWeight: '700' },
+  avatarPlaceholder: { backgroundColor: COLORS.page, alignItems: 'center', justifyContent: 'center' },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginHorizontal: 16, marginBottom: 10 },
-  sectionTitleInline: { color: COLORS.dark, fontSize: 18, fontWeight: '800' },
-  addPetButton: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.blue, paddingHorizontal: 12, minHeight: 36, borderRadius: 18 },
+  sectionTitleInline: { color: COLORS.text, fontSize: 18, fontWeight: '800' },
+  addPetButton: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: COLORS.primary, paddingHorizontal: 12, minHeight: 36, borderRadius: 18 },
   addPetText: { color: COLORS.white, fontWeight: '700' },
   emptyText: { color: COLORS.muted, marginHorizontal: 16, marginBottom: 16 },
   petRow: { flexDirection: 'row', alignItems: 'center', gap: 12, backgroundColor: COLORS.white, marginHorizontal: 16, marginBottom: 8, padding: 12, borderRadius: 14 },
   petPhoto: { width: 48, height: 48, borderRadius: 24 },
-  petName: { color: COLORS.dark, fontWeight: '700', fontSize: 15 },
+  petName: { color: COLORS.text, fontWeight: '700', fontSize: 15 },
   petMeta: { color: COLORS.muted, fontSize: 13, marginTop: 2 },
 });

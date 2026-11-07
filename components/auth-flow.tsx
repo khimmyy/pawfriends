@@ -7,7 +7,7 @@ import {
   validatePassword,
 } from '@/constants/validation';
 import { useAuth } from '@/context/auth';
-import { COLORS } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { useRef, useState, type Ref } from 'react';
@@ -27,11 +27,11 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export type AuthMode = 'signIn' | 'register';
 
-const CREAM = '#FFF8F0';
-const TAGLINE = '#C7D7F8';
-const ERROR = '#B91C1C';
-const ERROR_BG = '#FEF2F2';
-const INFO_BG = '#E6F1FB';
+const LOGO_TILE = COLORS.white;
+const TAGLINE = COLORS.onPrimaryMuted;
+const ERROR = COLORS.danger;
+const ERROR_BG = COLORS.dangerSoft;
+const INFO_BG = COLORS.primarySoft;
 
 type FieldErrors = {
   fullName: string | null;
@@ -145,8 +145,8 @@ export function AuthFlow({ initialMode }: { initialMode: AuthMode }) {
             ) : null}
             {info ? (
               <View style={[styles.message, styles.messageInfo]} accessibilityLiveRegion="polite">
-                <Ionicons name="information-circle-outline" size={18} color={COLORS.blue} />
-                <Text style={[styles.messageText, { color: COLORS.dark }]}>{info}</Text>
+                <Ionicons name="information-circle-outline" size={18} color={COLORS.primary} />
+                <Text style={[styles.messageText, { color: COLORS.text }]}>{info}</Text>
               </View>
             ) : null}
 
@@ -290,7 +290,7 @@ function IconField({ label, icon, error, hint, revealable = false, ref, onFocus,
   return (
     <View style={styles.fieldBlock}>
       <View style={[styles.field, focused && styles.fieldFocused, error ? styles.fieldInvalid : null]}>
-        <Ionicons name={icon} size={19} color={error ? ERROR : COLORS.blue} />
+        <Ionicons name={icon} size={19} color={error ? ERROR : COLORS.primary} />
         <TextInput
           {...inputProps}
           ref={ref}
@@ -330,7 +330,7 @@ function IconField({ label, icon, error, hint, revealable = false, ref, onFocus,
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: COLORS.blue },
+  page: { flex: 1, backgroundColor: COLORS.primary },
   flex: { flex: 1 },
   scroll: { flexGrow: 1 },
   header: { alignItems: 'center', paddingHorizontal: 24, paddingBottom: 60, gap: 6 },
@@ -338,7 +338,7 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 24,
-    backgroundColor: CREAM,
+    backgroundColor: LOGO_TILE,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
@@ -354,12 +354,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 22,
     paddingTop: 22,
   },
-  switch: { flexDirection: 'row', backgroundColor: COLORS.bg, borderRadius: 14, padding: 4, marginBottom: 22 },
+  switch: { flexDirection: 'row', backgroundColor: COLORS.page, borderRadius: 14, padding: 4, marginBottom: 22 },
   switchOption: { flex: 1, minHeight: 42, borderRadius: 11, alignItems: 'center', justifyContent: 'center' },
   switchOptionSelected: { backgroundColor: COLORS.white },
   switchText: { color: COLORS.muted, fontWeight: '600', fontSize: 14 },
-  switchTextSelected: { color: COLORS.dark, fontWeight: '700' },
-  title: { color: COLORS.dark, fontSize: 24, fontWeight: '800' },
+  switchTextSelected: { color: COLORS.text, fontWeight: '700' },
+  title: { color: COLORS.text, fontSize: 24, fontWeight: '800' },
   subtitle: { color: COLORS.muted, fontSize: 15, marginTop: 4, marginBottom: 18 },
   message: { flexDirection: 'row', alignItems: 'flex-start', gap: 8, borderRadius: 12, padding: 12, marginBottom: 14 },
   messageError: { backgroundColor: ERROR_BG },
@@ -374,23 +374,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: 16,
     borderWidth: 1.5,
-    borderColor: COLORS.bg,
-    backgroundColor: COLORS.bg,
+    borderColor: COLORS.page,
+    backgroundColor: COLORS.page,
   },
-  fieldFocused: { borderColor: COLORS.blue, backgroundColor: COLORS.white },
+  fieldFocused: { borderColor: COLORS.primary, backgroundColor: COLORS.white },
   fieldInvalid: { borderColor: ERROR, backgroundColor: ERROR_BG },
   input: {
     flex: 1,
     alignSelf: 'stretch',
     fontSize: 15,
-    color: COLORS.dark,
+    color: COLORS.text,
     ...(Platform.OS === 'web' ? { outlineWidth: 0 } : null),
   },
   reveal: { width: 36, height: 36, alignItems: 'center', justifyContent: 'center' },
   fieldError: { color: ERROR, fontSize: 13, marginTop: 6, marginLeft: 4 },
   fieldHint: { color: COLORS.muted, fontSize: 13, marginTop: 6, marginLeft: 4 },
   forgot: { alignSelf: 'flex-end', paddingVertical: 4, marginTop: -4, marginBottom: 14 },
-  forgotText: { color: COLORS.blue, fontWeight: '700', fontSize: 13 },
+  forgotText: { color: COLORS.primary, fontWeight: '700', fontSize: 13 },
   submit: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -398,7 +398,7 @@ const styles = StyleSheet.create({
     gap: 8,
     minHeight: 54,
     borderRadius: 16,
-    backgroundColor: COLORS.blue,
+    backgroundColor: COLORS.primary,
     marginTop: 6,
   },
   submitPressed: { opacity: 0.85 },

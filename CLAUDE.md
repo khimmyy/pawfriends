@@ -33,17 +33,17 @@ In a `.claude/worktrees/*` checkout, run `npm ci` there first; a junction to the
 - `app/pets/new.tsx`, `app/pets/[id].tsx` (add and edit a pet, sharing `components/pet-form.tsx`), `app/posts/new.tsx` (create a post), `app/posts/[id].tsx` (a post and its comments) and `app/posts/saved.tsx`; each must also be listed in the signed-in `Stack.Protected` block in `app/_layout.tsx`
 - PawFeed shows posts from the database only (`getFeedPosts(db, viewerId, { search, savedOnly })`), with search in the header; it reloads with `useFocusEffect` so new posts and comment counts appear on return
 - `components/PostCard.tsx` is presentational: it takes a `FeedPost` and `onLike` / `onComment` / `onShare` / `onSave`. Screens get those from `hooks/use-post-actions.ts`, which updates the post in the screen's list and returns a `notice` for `components/notice-banner.tsx`
-- Logo: one paw with a yellow heart in the pad. Its shapes live in `constants/logo-shape.json`; `components/paw-logo.tsx` (`PawLogo`) draws it in the app, and `npm run generate-logo` (`scripts/generate-logo-assets.js`) redraws `assets/images/` icon, Android icon layers, splash image, favicon and `logo.svg` from the same file. Change the JSON, then rerun the script; don't edit those PNGs by hand
-- `components/animated-splash.tsx` waves the logo on launch: `app/_layout.tsx` keeps the native splash (cream `#FFF8F0` in `app.json`) up until the database opens, then shows this over the app until the session has loaded (at least 1.7 s; still when the device asks for reduced motion)
+- Logo: a violet paw with a coral heart in the pad. Its shapes live in `constants/logo-shape.json`; `components/paw-logo.tsx` (`PawLogo`) draws it in the app, and `npm run generate-logo` (`scripts/generate-logo-assets.js`) redraws `assets/images/` icon, Android icon layers, splash image, favicon and `logo.svg` from the same file. Change the JSON, then rerun the script; don't edit those PNGs by hand
+- `components/animated-splash.tsx` waves the logo on launch: `app/_layout.tsx` keeps the native splash (lavender `#F6F3FF` in `app.json`) up until the database opens, then shows this over the app until the session has loaded (at least 1.7 s; still when the device asks for reduced motion)
 - `utils/` — `pet-photos.ts` (pick photos and copy them into app storage; native only), `navigation.ts` (`goBackOr`, for screens that can be opened without history on the web), `time.ts` (`formatTimeAgo` for SQLite UTC timestamps), `share.ts` (system share sheet; copies to the clipboard in browsers without one)
 - `components/` — `PostCard.tsx` is live; `ui/*`, `themed-*`, `parallax-scroll-view`, `hello-wave`, `FeedScreen.tsx` and `app/modal.tsx` are template leftovers and unused
 - `database/database.ts` — all schema migrations and queries
-- `data/pets.ts` — `COLORS` palette and mock data used by the screens
+- `constants/colors.ts` — the palette (`COLORS`): violet `primary`, ink `text`, lavender `page`, mint `accent`, coral `heart`, with darker `*Text` shades for small text. The logo script and `app.json` repeat a few of these values; change them together. `data/pets.ts` holds only sample content
 
 ## Conventions
 
 - Import with the `@/` alias (maps to repo root).
-- Screens use `SafeAreaView` from `react-native-safe-area-context` with `edges={['top', 'left', 'right']}` and colors from `COLORS` in `data/pets.ts`. Styles go in a `StyleSheet.create` at the bottom of the file.
+- Screens use `SafeAreaView` from `react-native-safe-area-context` with `edges={['top', 'left', 'right']}` and colors from `COLORS` in `constants/colors.ts` (no hard-coded hex values in screens). Styles go in a `StyleSheet.create` at the bottom of the file.
 - Return JSX directly from screen components. Never define a component inside another component (it remounts on every render and drops TextInput focus).
 - Icons come from `Ionicons` in `@expo/vector-icons`.
 - Database access goes through functions in `database/database.ts` that take the `SQLiteDatabase` from `useSQLiteContext()`. Always use bound parameters. Schema changes bump `DATABASE_VERSION` and add a step keyed on `PRAGMA user_version` (see the `sqlite-migration` skill).

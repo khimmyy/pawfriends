@@ -1,5 +1,5 @@
 import { AuthButton, AuthField, FormError } from '@/components/auth-form';
-import { COLORS } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
 import { PET_SPECIES, type PetInput, type PetSpecies } from '@/database/database';
 import { goBackOr } from '@/utils/navigation';
 import { pickPhoto, savePetPhoto } from '@/utils/pet-photos';
@@ -87,7 +87,7 @@ export function PetForm({ title, submitLabel, initial, onSubmit }: PetFormProps)
           style={styles.backButton}
           hitSlop={8}
         >
-          <Ionicons name="chevron-back" size={22} color={COLORS.dark} />
+          <Ionicons name="chevron-back" size={22} color={COLORS.text} />
         </Pressable>
         <Text style={styles.title} accessibilityRole="header">{title}</Text>
       </View>
@@ -105,7 +105,7 @@ export function PetForm({ title, submitLabel, initial, onSubmit }: PetFormProps)
             <Image source={{ uri: photoUri }} style={styles.photo} />
           ) : (
             <View style={[styles.photo, styles.photoPlaceholder]}>
-              <Ionicons name="camera-outline" size={32} color={COLORS.blue} />
+              <Ionicons name="camera-outline" size={32} color={COLORS.primary} />
             </View>
           )}
           <Text style={styles.photoText}>{photoUri ? 'Change photo' : 'Add a photo'}</Text>
@@ -149,19 +149,19 @@ export function PetForm({ title, submitLabel, initial, onSubmit }: PetFormProps)
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.white, paddingHorizontal: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(13,27,62,0.08)' },
+  safeArea: { flex: 1, backgroundColor: COLORS.page },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.white, paddingHorizontal: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   backButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 20, fontWeight: '800', color: COLORS.dark },
+  title: { fontSize: 20, fontWeight: '800', color: COLORS.text },
   content: { padding: 20 },
   photoPicker: { alignItems: 'center', marginBottom: 20 },
   photo: { width: 120, height: 120, borderRadius: 60 },
-  photoPlaceholder: { backgroundColor: COLORS.white, borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.blue, alignItems: 'center', justifyContent: 'center' },
-  photoText: { marginTop: 8, color: COLORS.blue, fontWeight: '600' },
-  label: { fontSize: 14, fontWeight: '600', color: '#06123B', marginBottom: 6 },
+  photoPlaceholder: { backgroundColor: COLORS.white, borderWidth: 2, borderStyle: 'dashed', borderColor: COLORS.primary, alignItems: 'center', justifyContent: 'center' },
+  photoText: { marginTop: 8, color: COLORS.primary, fontWeight: '600' },
+  label: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginBottom: 6 },
   speciesRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  chip: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: COLORS.white, borderWidth: 1, borderColor: '#E5E7EB' },
-  chipSelected: { backgroundColor: COLORS.blue, borderColor: COLORS.blue },
+  chip: { paddingVertical: 10, paddingHorizontal: 16, borderRadius: 20, backgroundColor: COLORS.white, borderWidth: 1, borderColor: COLORS.border },
+  chipSelected: { backgroundColor: COLORS.primary, borderColor: COLORS.primary },
   chipText: { color: COLORS.muted, fontWeight: '600' },
   chipTextSelected: { color: COLORS.white },
 });

@@ -2,7 +2,7 @@ import { NoticeBanner } from '@/components/notice-banner';
 import { PostCard } from '@/components/PostCard';
 import { ScreenHeader } from '@/components/screen-header';
 import { useAuth } from '@/context/auth';
-import { COLORS } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
 import { getFeedPosts, type FeedPost } from '@/database/database';
 import { usePostActions } from '@/hooks/use-post-actions';
 import { goBackOr } from '@/utils/navigation';
@@ -78,8 +78,8 @@ export default function SavedPostsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: COLORS.bg },
+  safeArea: { flex: 1, backgroundColor: COLORS.page },
   empty: { alignItems: 'center', paddingHorizontal: 32, paddingVertical: 48, gap: 6 },
-  emptyTitle: { color: COLORS.dark, fontSize: 16, fontWeight: '700', marginTop: 6 },
+  emptyTitle: { color: COLORS.text, fontSize: 16, fontWeight: '700', marginTop: 6 },
   emptyText: { color: COLORS.muted, textAlign: 'center' },
 });

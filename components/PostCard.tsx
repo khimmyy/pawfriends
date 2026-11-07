@@ -1,5 +1,5 @@
 import { PawLogo } from '@/components/paw-logo';
-import { COLORS } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
 import type { FeedPost } from '@/database/database';
 import { formatTimeAgo } from '@/utils/time';
 import { Ionicons } from '@expo/vector-icons';
@@ -44,7 +44,10 @@ export function PostCard({ post, onLike, onComment, onShare, onSave }: PostCardP
       {post.photoUri ? <Image source={{ uri: post.photoUri }} style={styles.postImage} /> : null}
 
       <View style={styles.countRow}>
-        <Text style={styles.meta}>❤️ {post.likeCount.toLocaleString()}</Text>
+        <View style={styles.likeCount}>
+          <Ionicons name="heart" size={13} color={COLORS.heart} />
+          <Text style={styles.meta}>{post.likeCount.toLocaleString()}</Text>
+        </View>
         <Pressable accessibilityRole="button" onPress={() => onComment(post)} hitSlop={8}>
           <Text style={styles.meta}>{plural(post.commentCount, 'comment')}</Text>
         </Pressable>
@@ -56,6 +59,7 @@ export function PostCard({ post, onLike, onComment, onShare, onSave }: PostCardP
           accessibilityLabel={post.likedByMe ? `Unlike ${title}'s post` : `Like ${title}'s post`}
           icon={post.likedByMe ? 'heart' : 'heart-outline'}
           active={post.likedByMe}
+          tone="heart"
           onPress={() => onLike(post)}
         />
         <ActionButton
@@ -75,8 +79,8 @@ export function PostCard({ post, onLike, onComment, onShare, onSave }: PostCardP
           accessibilityLabel={post.savedByMe ? `Unsave ${title}'s post` : `Save ${title}'s post`}
           icon={post.savedByMe ? 'bookmark' : 'bookmark-outline'}
           active={post.savedByMe}
+          tone="accent"
           onPress={() => onSave(post)}
-          yellow
         />
       </View>
     </View>
@@ -88,12 +92,19 @@ type ActionButtonProps = {
   accessibilityLabel: string;
   icon: keyof typeof Ionicons.glyphMap;
   active?: boolean;
-  yellow?: boolean;
+  /** Color when active: coral for likes, mint for saves. */
+  tone?: 'heart' | 'accent';
   onPress: () => void;
 };
 
-function ActionButton({ label, accessibilityLabel, icon, active = false, yellow = false, onPress }: ActionButtonProps) {
-  const activeColor = yellow ? COLORS.yellow : COLORS.blue;
+// Icons use the bright accent; labels use its darker shade so the small text stays readable.
+const TONES = {
+  heart: { icon: COLORS.heart, text: COLORS.heartText },
+  accent: { icon: COLORS.accent, text: COLORS.accentText },
+} as const;
+
+function ActionButton({ label, accessibilityLabel, icon, active = false, tone = 'accent', onPress }: ActionButtonProps) {
+  const activeColors = TONES[tone];
   return (
     <Pressable
       accessibilityRole="button"
@@ -102,22 +113,23 @@ function ActionButton({ label, accessibilityLabel, icon, active = false, yellow 
       onPress={onPress}
       style={styles.actionButton}
     >
-      <Ionicons name={icon} size={18} color={active ? activeColor : COLORS.muted} />
-      <Text style={[styles.actionText, active && { color: activeColor }]}>{label}</Text>
+      <Ionicons name={icon} size={18} color={active ? activeColors.icon : COLORS.muted} />
+      <Text style={[styles.actionText, active && { color: activeColors.text }]}>{label}</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: COLORS.white, marginBottom: 8, borderBottomWidth: 1, borderBottomColor: 'rgba(13,27,62,0.07)' },
+  card: { backgroundColor: COLORS.white, marginBottom: 8, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12 },
-  avatar: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: COLORS.blue },
-  avatarPlaceholder: { backgroundColor: COLORS.bg, alignItems: 'center', justifyContent: 'center' },
-  petName: { fontWeight: '700', color: COLORS.dark, fontSize: 15 },
+  avatar: { width: 42, height: 42, borderRadius: 21, borderWidth: 2, borderColor: COLORS.primary },
+  avatarPlaceholder: { backgroundColor: COLORS.page, alignItems: 'center', justifyContent: 'center' },
+  petName: { fontWeight: '700', color: COLORS.text, fontSize: 15 },
   meta: { color: COLORS.muted, fontSize: 12 },
-  caption: { color: COLORS.dark, fontSize: 14, lineHeight: 21, paddingHorizontal: 16, paddingBottom: 10 },
-  postImage: { width: '100%', height: 320, backgroundColor: '#D8E4F7' },
-  countRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: 'rgba(13,27,62,0.07)' },
+  caption: { color: COLORS.text, fontSize: 14, lineHeight: 21, paddingHorizontal: 16, paddingBottom: 10 },
+  postImage: { width: '100%', height: 320, backgroundColor: COLORS.imagePlaceholder },
+  countRow: { flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  likeCount: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   actions: { flexDirection: 'row', paddingHorizontal: 6 },
   actionButton: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, minHeight: 44 },
   actionText: { color: COLORS.muted, fontWeight: '600', fontSize: 13 },

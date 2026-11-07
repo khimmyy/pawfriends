@@ -1,4 +1,4 @@
-import { COLORS } from '@/data/pets';
+import { COLORS } from '@/constants/colors';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -12,7 +12,7 @@ export function ScreenHeader({ title, onBack }: ScreenHeaderProps) {
   return (
     <View style={styles.header}>
       <Pressable accessibilityRole="button" accessibilityLabel="Go back" onPress={onBack} style={styles.backButton} hitSlop={8}>
-        <Ionicons name="chevron-back" size={22} color={COLORS.dark} />
+        <Ionicons name="chevron-back" size={22} color={COLORS.text} />
       </Pressable>
       <Text style={styles.title} accessibilityRole="header">
         {title}
@@ -22,7 +22,7 @@ export function ScreenHeader({ title, onBack }: ScreenHeaderProps) {
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.white, paddingHorizontal: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: 'rgba(13,27,62,0.08)' },
+  header: { flexDirection: 'row', alignItems: 'center', gap: 8, backgroundColor: COLORS.white, paddingHorizontal: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: COLORS.border },
   backButton: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 20, fontWeight: '800', color: COLORS.dark },
+  title: { fontSize: 20, fontWeight: '800', color: COLORS.text },
 });

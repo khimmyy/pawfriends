@@ -1,16 +1,7 @@
+import { COLORS } from '@/constants/colors';
 import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 
 // Form pieces shared by the pet and post forms. The sign-in screen has its own, in auth-flow.tsx.
-
-const COLORS = {
-  title: '#06123B',
-  muted: '#6B7280',
-  border: '#E5E7EB',
-  primary: '#2257E5',
-  error: '#B91C1C',
-  errorBg: '#FEF2F2',
-  white: '#FFFFFF',
-};
 
 type AuthFieldProps = TextInputProps & {
   label: string;
@@ -67,7 +58,7 @@ export function AuthButton({ label, onPress, loading = false }: AuthButtonProps)
 
 const styles = StyleSheet.create({
   field: { marginBottom: 14 },
-  label: { fontSize: 14, fontWeight: '600', color: COLORS.title, marginBottom: 6 },
+  label: { fontSize: 14, fontWeight: '600', color: COLORS.text, marginBottom: 6 },
   input: {
     backgroundColor: COLORS.white,
     padding: 16,
@@ -75,17 +66,17 @@ const styles = StyleSheet.create({
     fontSize: 15,
     borderWidth: 1,
     borderColor: COLORS.border,
-    color: COLORS.title,
+    color: COLORS.text,
   },
-  inputError: { borderColor: COLORS.error },
-  fieldError: { color: COLORS.error, fontSize: 13, marginTop: 6 },
+  inputError: { borderColor: COLORS.danger },
+  fieldError: { color: COLORS.danger, fontSize: 13, marginTop: 6 },
   formError: {
-    backgroundColor: COLORS.errorBg,
+    backgroundColor: COLORS.dangerSoft,
     borderRadius: 12,
     padding: 12,
     marginBottom: 14,
   },
-  formErrorText: { color: COLORS.error, fontWeight: '600', textAlign: 'center' },
+  formErrorText: { color: COLORS.danger, fontWeight: '600', textAlign: 'center' },
   button: {
     backgroundColor: COLORS.primary,
     minHeight: 52,
