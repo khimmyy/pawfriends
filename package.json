@@ -10,7 +10,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test": "jest",
-    "generate-logo": "node ./scripts/generate-logo-assets.js"
+    "generate-logo": "node ./scripts/generate-logo-assets.js",
+    "dev-db": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --disable-warning=ExperimentalWarning ./scripts/dev-database/create-dev-database.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

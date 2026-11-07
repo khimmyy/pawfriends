@@ -12,6 +12,7 @@ Cross-platform pet community prototype (Expo SDK 57, React Native 0.86, React 19
 - Install Expo/RN packages with `npx expo install <pkg>`, never plain `npm install`, and do not upgrade SDK packages unless asked
 
 - `npm test` — Jest (`jest-expo` preset); tests live in `__tests__/`
+- `npm run dev-db` — rebuilds `pawfriends-dev.db` (git-ignored) with the real schema from `database/database.ts` and sample data, for browsing in a SQLite viewer (the recommended VS Code extension is SQLite Viewer). It runs the TypeScript directly, so it needs Node 22.18+. It is not the app's database: to inspect that, press Shift+M in the Expo CLI terminal and choose "Open expo-sqlite"
 
 Lint, type check and `npm test` must all pass; say which platforms you actually ran the app on.
 

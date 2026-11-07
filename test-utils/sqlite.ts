@@ -5,12 +5,12 @@ import type { DatabaseSync, SQLInputValue } from 'node:sqlite';
 const { DatabaseSync: NodeDatabase } = process.getBuiltinModule('node:sqlite');
 
 /**
- * An in-memory SQLite database that implements the parts of expo-sqlite's
- * SQLiteDatabase API used by database/database.ts. It runs the real SQL, so
- * migrations and queries are checked by an actual SQLite engine.
+ * A SQLite database that implements the parts of expo-sqlite's SQLiteDatabase API
+ * used by database/database.ts. It runs the real SQL, so migrations and queries are
+ * checked by an actual SQLite engine. In memory by default; pass a file path to keep it.
  */
-export function createTestDatabase(): { db: SQLiteDatabase; raw: DatabaseSync } {
-  const raw = new NodeDatabase(':memory:');
+export function createTestDatabase(filename = ':memory:'): { db: SQLiteDatabase; raw: DatabaseSync } {
+  const raw = new NodeDatabase(filename);
 
   // expo-sqlite accepts parameters either as separate arguments or as one array.
   const toParams = (params: unknown[]) =>
