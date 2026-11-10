@@ -47,7 +47,6 @@ export default function LoginScreen() {
     }
   };
 
-  const KeyboardAviodingComponent = () => {
   return (
     <KeyboardAvoidingView
      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -91,9 +90,7 @@ export default function LoginScreen() {
           </View>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
-   
   );
-};
 }
 
 const styles = StyleSheet.create({

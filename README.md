@@ -2,7 +2,7 @@
 
 PawFriends is a cross-platform pet community prototype built with Expo and React Native. It brings together a social feed, pet adoption listings, veterinary reminders, activity notifications, and pet profiles in one app.
 
-The current project is migrating from Firebase to a device-local SQLite data layer. Owner records are stored in `pawfriends.db`; the rest of the app currently uses static development data and UI-only interactions.
+The project has moved from Firebase to a device-local SQLite data layer: the Firebase SDK and `firebaseConfig.ts` have been removed, and owner records are now stored in `pawfriends.db`. The rest of the app currently uses static development data and UI-only interactions.
 
 ## Current status
 
@@ -13,10 +13,12 @@ Implemented or in progress:
 - Versioned database setup with WAL mode, foreign keys, and an `owners` table
 - Owner registration data handling with normalized, unique email addresses and bound SQL parameters
 - Per-record random password salts and SHA-512 hashes generated with `expo-crypto`
-- Keyboard-aware registration form UI and duplicate-email error handling
+- Registration form with required-field checks, duplicate-email error handling, and keyboard-aware layout (tap outside a field to dismiss the keyboard)
 - Static pet stories, feed posts, adoption content, veterinary services, notifications, and profile data
+- PawFeed header with search, new-post, and menu buttons (visual only)
 - Expo SQLite web support through WebAssembly and COOP/COEP headers
-- Typed Expo Router routes and the React Compiler
+- Typed Expo Router routes and the React Compiler (the New Architecture is the SDK 57 default, so `newArchEnabled` and `edgeToEdgeEnabled` are no longer set in `app.json`)
+- Config plugins for `expo-router`, `expo-splash-screen`, `expo-font`, `expo-image`, `expo-web-browser`, `expo-status-bar`, and `expo-sqlite`
 
 Still to build:
 
@@ -103,6 +105,9 @@ database/
   database.ts          SQLite schema migration and owner queries
 hooks/                 Shared React hooks
 metro.config.js        Metro configuration, including SQLite web support
+app.json               Expo config, plugins, and COOP/COEP headers for web
+AGENTS.md              Instructions for AI coding agents (CLAUDE.md points here)
+.codex/skills/         Project development skill for AI coding agents
 ```
 
 ## Local owner storage
@@ -124,6 +129,18 @@ Registration trims the owner's name, normalizes the email address to lowercase, 
 ### Security scope
 
 This registration flow is for local prototyping only. Although plaintext passwords are not stored, a single salted SHA-512 digest is not an appropriate production password-storage design, and the default SQLite database is not encrypted. Production accounts should use a trusted authentication service or a server-side, slow password-hashing design with secure session management. Do not store service credentials, access tokens, or other secrets in this database.
+
+## Known issues
+
+- The "Already have an account? Log in" text is not yet wired to a sign-in flow.
+
+## Contributing
+
+- Follow `AGENTS.md`: read the Expo SDK 57 docs at <https://docs.expo.dev/versions/v57.0.0/> before writing code.
+- Install Expo and React Native packages with `npx expo install <package>` so SDK-compatible versions are selected, and don't upgrade Expo or React Native unless that is the goal of the change.
+- Keep schema migrations and queries in `database/`, always use bound parameters, and never store plaintext passwords or secrets.
+- Run `npm run lint` and `npx tsc --noEmit` before opening a pull request.
+- The full development conventions for AI coding agents live in `.codex/skills/pawfriends-expo-development/SKILL.md`.
 
 ## Join the community
 
