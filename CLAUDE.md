@@ -62,3 +62,7 @@ In a `.claude/worktrees/*` checkout, run `npm ci` there first; a junction to the
 ## Project skills
 
 In `.claude/skills/`: `pawfriends-expo-development` (general workflow), `add-screen` (new route or tab), `sqlite-migration` (schema changes and queries).
+
+## Planning
+
+`ROADMAP.md` is the to-do list for the project (`- [ ]` items, ticked with `- [x]` in the same commit as the work). The Todo Tree VS Code extension (recommended in `.vscode/extensions.json`, configured in `.vscode/settings.json`) lists its open items and any `TODO:` / `FIXME:` comments.

@@ -3,5 +3,25 @@
     "source.fixAll": "explicit",
     "source.organizeImports": "explicit",
     "source.sortMembers": "explicit"
+  },
+
+  // Todo Tree: lists open ROADMAP.md checkboxes ("- [ ]") and TODO/FIXME comments in the sidebar.
+  // Ticked items ("- [x]") are left out so the list shows only what is still to do.
+  "todo-tree.general.tags": ["[ ]", "TODO", "FIXME", "BUG", "HACK"],
+  "todo-tree.filtering.excludeGlobs": [
+    "**/node_modules/*/**",
+    "**/.expo/**",
+    "**/dist/**",
+    "**/android/**",
+    "**/ios/**",
+    "**/.claude/worktrees/**"
+  ],
+  "todo-tree.tree.showCountsInTree": true,
+  "todo-tree.highlights.customHighlight": {
+    "[ ]": { "icon": "checklist", "iconColour": "#7A4FE0" },
+    "TODO": { "icon": "check", "iconColour": "#0E7F64" },
+    "FIXME": { "icon": "alert", "iconColour": "#C8325B" },
+    "BUG": { "icon": "bug", "iconColour": "#C8325B" },
+    "HACK": { "icon": "tools", "iconColour": "#6F6890" }
   }
 }
