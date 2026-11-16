@@ -1,6 +1,7 @@
 import { useColors } from '@/context/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
+import type { ColorValue } from 'react-native';
 
 export default function TabLayout() {
   const colors = useColors();
@@ -29,21 +30,21 @@ export default function TabLayout() {
         name="home"
         options={{
           title: 'PawFeed',
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <TabIcon name="home" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="adoption"
         options={{
           title: 'Adopt',
-          tabBarIcon: ({ color, size }) => <Ionicons name="paw" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <TabIcon name="paw" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="veterinary"
         options={{
           title: 'Vet',
-          tabBarIcon: ({ color, size }) => <Ionicons name="medical" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <TabIcon name="medical" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
@@ -52,16 +53,28 @@ export default function TabLayout() {
           title: 'Activity',
           tabBarBadge: 4,
           tabBarBadgeStyle: { backgroundColor: colors.heart, color: colors.onPrimary },
-          tabBarIcon: ({ color, size }) => <Ionicons name="notifications" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <TabIcon name="notifications" size={size} color={color} />,
         }}
       />
       <Tabs.Screen
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size }) => <Ionicons name="person" size={size} color={color} />,
+          tabBarIcon: ({ color, size }) => <TabIcon name="person" size={size} color={color} />,
         }}
       />
     </Tabs>
   );
+}
+
+type TabIconProps = {
+  name: keyof typeof Ionicons.glyphMap;
+  color: ColorValue | null | undefined;
+  size: number;
+};
+
+// Since React Native 0.88 the tab bar passes the wider ColorValue type (it can be a number or null),
+// while @expo/vector-icons still expects a string. The tint colors set above are always strings.
+function TabIcon({ name, color, size }: TabIconProps) {
+  return <Ionicons name={name} size={size} color={typeof color === 'string' ? color : undefined} />;
 }

@@ -5,7 +5,7 @@ description: Add or change PawFriends SQLite tables, migrations, and queries in 
 
 # SQLite migrations and queries
 
-The database is `pawfriends.db`, opened by `SQLiteProvider` in `app/_layout.tsx`, which runs `initializeDatabase` from `database/database.ts` on startup. Everything schema- or query-related lives in `database/database.ts`. Check the SDK 57 expo-sqlite docs (`https://docs.expo.dev/versions/v57.0.0/sdk/sqlite/`) before using an API you have not seen in this file.
+The database is `pawfriends.db`, opened by `SQLiteProvider` in `app/_layout.tsx`, which runs `initializeDatabase` from `database/database.ts` on startup. Everything schema- or query-related lives in `database/database.ts`. Check the SDK 58 expo-sqlite docs (`https://docs.expo.dev/versions/v58.0.0/sdk/sqlite/`) before using an API you have not seen in this file.
 
 ## Adding a migration
 

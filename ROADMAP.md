@@ -36,7 +36,7 @@ Suggested order: the pull request, then the phone test, then the Profile real-da
 - [ ] Rename `pawfriends54` to `pawfriends` in `app.json` and `package.json` before anything is published (the URL scheme is hard to change later)
 - [ ] Screen tests with React Native Testing Library (sign-in validation, creating a post, the like button)
 - [ ] GitHub Action that runs lint, type check and tests on every pull request
-- [ ] Small Expo updates: `npx expo install --check` (57.0.30 → 57.0.32), then retest
+- [x] Upgrade to Expo SDK 58 (React Native 0.88, React 19.3); keep `npx expo install --check` clean after patch releases
 - [ ] Decide where Reusables components are used and pick one style for new forms (`components/ui/` vs `AuthField`)
 
 ## 5. Bigger next steps

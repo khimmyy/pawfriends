@@ -2,7 +2,7 @@
 
 # PawFriends
 
-Cross-platform pet community prototype (Expo SDK 57, React Native 0.86, React 19.2, strict TypeScript 6, Expo Router with typed routes, React Compiler, Expo SQLite). Owners, the signed-in session, pets, posts, likes, saves, comments and app settings are stored locally in SQLite (`database/database.ts`, schema version 6). Stories, adoption, vet, activity and the profile stats and post grid still use static data from `data/pets.ts`.
+Cross-platform pet community prototype (Expo SDK 58, React Native 0.88, React 19.3, strict TypeScript 6, Expo Router with typed routes, React Compiler, Expo SQLite). Owners, the signed-in session, pets, posts, likes, saves, comments and app settings are stored locally in SQLite (`database/database.ts`, schema version 6). Stories, adoption, vet, activity and the profile stats and post grid still use static data from `data/pets.ts`.
 
 ## Commands
 
@@ -50,6 +50,8 @@ In a `.claude/worktrees/*` checkout, run `npm ci` there first; a junction to the
 - Return JSX directly from screen components. Never define a component inside another component (it remounts on every render and drops TextInput focus).
 - Two styling systems, one palette: app screens use `StyleSheet` + `useColors()`; React Native Reusables components (`components/ui/`) use Tailwind classes via NativeWind 4 (`className`, `cn()` from `lib/utils.ts`). Their colors are CSS variables in `global.css` generated from the same palettes, and `context/theme.tsx` sets NativeWind's color scheme from the Appearance setting, so both follow System / Light / Dark. Setup: `babel.config.js`, `metro.config.js` (`withNativeWind`, plus the `.wasm` asset and COOP/COEP headers that expo-sqlite needs on the web), `tailwind.config.js` (`darkMode: "class"`), `global.css` imported first in `app/_layout.tsx`, `PortalHost` in the root layout, `lib/theme.ts` (`THEME`, `NAV_THEME`). Keep `tailwind-merge` on 2.x (3.x is for Tailwind v4)
 - Icons come from `Ionicons` in `@expo/vector-icons`.
+- React Native 0.88 types: type a `TextInput` ref as `useRef<TextInputInstance>(null)` (imported from `react-native`), not `useRef<TextInput>`. Tab bar icon colors are the wider `ColorValue` (can be a number or null); pass them through `TabIcon` in `app/(tabs)/_layout.tsx` rather than straight into `Ionicons`
+- NativeWind 4.2.7 officially lists support up to Expo SDK 57; on SDK 58 it builds and works on the web (checked at the upgrade) but has not been checked on a phone. If a NativeWind issue appears on native, check for a newer 4.x release or the v5 migration guide before working around it
 - Database access goes through functions in `database/database.ts` that take the `SQLiteDatabase` from `useSQLiteContext()`. Always use bound parameters. Schema changes bump `DATABASE_VERSION` and add a step keyed on `PRAGMA user_version` (see the `sqlite-migration` skill).
 - Never store plaintext passwords or secrets. The current salted SHA-512 hash is prototype-only.
 - Avoid `any`; keep strict types.

@@ -22,6 +22,7 @@ import {
   Text,
   TextInput,
   View,
+  type TextInputInstance,
   type TextInputProps,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -59,8 +60,8 @@ export function AuthFlow({ initialMode }: { initialMode: AuthMode }) {
   const [formError, setFormError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const emailRef = useRef<TextInput>(null);
-  const passwordRef = useRef<TextInput>(null);
+  const emailRef = useRef<TextInputInstance>(null);
+  const passwordRef = useRef<TextInputInstance>(null);
 
   const isRegister = mode === 'register';
   const copy = COPY[mode];
@@ -279,7 +280,7 @@ type IconFieldProps = TextInputProps & {
   hint?: string | null;
   /** Hides the text, with an eye button to show it. */
   revealable?: boolean;
-  ref?: Ref<TextInput>;
+  ref?: Ref<TextInputInstance>;
 };
 
 function IconField({ label, icon, error, hint, revealable = false, ref, onFocus, onBlur, ...inputProps }: IconFieldProps) {
