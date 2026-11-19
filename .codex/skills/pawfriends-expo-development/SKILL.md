@@ -1,6 +1,6 @@
 ---
 name: pawfriends-expo-development
-description: Implement, debug, or review PawFriends app changes in this repository using its Expo SDK 57, Expo Router, React Native, TypeScript, and SQLite conventions. Use for PawFriends development tasks; do not use for unrelated Expo projects or general product planning.
+description: Implement, debug, or review PawFriends app changes in this repository using its Expo SDK 58, Expo Router, React Native, TypeScript, and SQLite conventions. Use for PawFriends development tasks; do not use for unrelated Expo projects or general product planning.
 ---
 
 # PawFriends Expo Development
@@ -10,14 +10,14 @@ Make focused, working changes that fit the existing PawFriends application.
 ## Establish context
 
 - Read the applicable `AGENTS.md` instructions and inspect `package.json`, `app.json`, and the files neighboring the requested change.
-- Treat the installed versions as authoritative. This project uses Expo SDK 57, React Native 0.86, React 19.2, strict TypeScript, typed routes, the React Compiler, Expo Router, and Expo SQLite.
+- Treat the installed versions as authoritative. This project uses Expo SDK 58, React Native 0.88, React 19.3, strict TypeScript, typed routes, the React Compiler, Expo Router, and Expo SQLite.
 - Preserve user changes and avoid editing unrelated files. Check the working tree before modifying files.
 - Reuse existing components, theme values, route patterns, and import aliases when they fit the task.
 
 ## Use version-correct Expo guidance
 
-- Before writing code that depends on Expo or Expo Router behavior, read the relevant documentation for Expo SDK 57 under `https://docs.expo.dev/versions/v57.0.0/`.
-- Confirm that examples and APIs apply to SDK 57. If a versioned URL redirects to the latest docs, locate the SDK 57 variant or version-specific section instead of copying current-only behavior.
+- Before writing code that depends on Expo or Expo Router behavior, read the relevant documentation for Expo SDK 58 under `https://docs.expo.dev/versions/v58.0.0/`.
+- Confirm that examples and APIs apply to SDK 58. If a versioned URL redirects to the latest docs, locate the SDK 58 variant or version-specific section instead of copying current-only behavior.
 - Do not upgrade Expo, React Native, Expo Router, or related packages unless the user explicitly requests an upgrade.
 - Install Expo and React Native packages with `npx expo install <package>` so compatible versions are selected. Use `npm install` only for packages outside Expo's compatibility management.
 

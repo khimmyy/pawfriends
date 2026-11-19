@@ -41,3 +41,8 @@ app-example
 # generated native folders
 /ios
 /android
+
+# sample database built by `npm run dev-db`
+pawfriends-dev.db
+pawfriends-dev.db-wal
+pawfriends-dev.db-shm

@@ -1,11 +1,5 @@
-export const COLORS = {
-  blue: '#1A56DB',
-  yellow: '#F5C800',
-  dark: '#0D1B3E',
-  muted: '#5B73A8',
-  bg: '#EEF2FB',
-  white: '#FFFFFF',
-};
+// Sample content shown on screens that are not backed by the database yet.
+// The app's colors live in constants/colors.ts.
 
 export const STORIES = [
   { id: 1, name: 'Mochi', avatar: 'https://images.unsplash.com/photo-1629740067905-bd3f515aa739?w=200&h=200&fit=crop&auto=format' },

@@ -30,18 +30,18 @@ Still to build:
 
 ## Technology stack
 
-- Expo SDK 57
-- React Native 0.86.3
-- React 19.2.3
+- Expo SDK 58
+- React Native 0.88.1
+- React 19.3.0
 - TypeScript 6
-- Expo Router 57
-- Expo SQLite 57
-- Expo Crypto 57
+- Expo Router 58
+- Expo SQLite 58
+- Expo Crypto 58
 - React Navigation 7
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) 22.13.x or newer
+- [Node.js](https://nodejs.org/) 22.13+ (22.x) or 24.3+ (24.x); odd versions such as 23 and 25 are not supported
 - [Git](https://git-scm.com/)
 - [Expo Go](https://expo.dev/go), an Android emulator, an iOS simulator, or a web browser
 
